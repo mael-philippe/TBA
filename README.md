@@ -6,8 +6,16 @@ Pour gagner il faut reussir toutes les épreuves tout en restant en vie car cert
 Le joueur peut se déplacer de salle en salle avec les commandes go O, go E, go S & go N. Certaines salles ont des défis et peuvent permettre au joueur de récuperer des items et des points de vie.
 
 Le guide développeur :
+
 Voici les diagrammes de classes suivants :
+
 <img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" />
 
+<img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7a22" />
 
-les perspectives de développement (ce que vous imaginez pour améliorer votre jeu) ;
+<img width="1755" height="844" alt="Diagramme de Classe Command" src="https://github.com/user-attachments/assets/70279d1d-614e-4071-879a-1447cdc63d9a" />
+
+<img width="1735" height="924" alt="Diagramme de Classe Actions" src="https://github.com/user-attachments/assets/96c05ce0-90f0-4d57-8823-b194d08ff618" />
+
+Les perspectives de développement :
+Pour ameliorer notre jeu nous pourrions ajouter plus de salles/étages ainsi que plus de défis et items. Nous pourrions aussi ajouter des "sorts" pour pouvoir manipuler des PNJ.
