@@ -79,6 +79,10 @@ class Game:
         return None
 
     def process_command(self, command_string) -> None:
+        # Si la commande est vide, ne rien faire
+        if not command_string.strip():
+            return
+        
         # Split the command string into a list of words
         list_of_words = command_string.split(" ")
 
@@ -90,6 +94,14 @@ class Game:
         # If the command is recognized, execute it
         else:
             command = self.commands[command_word]
+            # Ajout: Vérification spécifique pour la commande "go"
+            if command_word == "go" and len(list_of_words) > 1:
+                direction = list_of_words[1].upper()
+                # Vérifier si la direction est valide (N, E, S, O)
+                if direction not in ["N", "E", "S", "O"]:
+                    print(f"\nDirection '{direction}' non valide. Les directions possibles sont: N (Nord), E (Est), S (Sud), O (Ouest).\n")
+                    return
+            
             command.action(self, list_of_words, command.number_of_parameters)
 
     def print_welcome(self):
@@ -100,8 +112,10 @@ class Game:
         print(self.player.current_room.get_long_description())
 
 def main():
-    # Create a game object and play the game
-    Game().play()
+    try:
+        Game().play()
+    except Exception as e:
+        pass
     
 
 if __name__ == "__main__":
