@@ -19,3 +19,15 @@ Voici les diagrammes de classes suivants :
 
 Les perspectives de développement :
 Pour ameliorer notre jeu nous pourrions ajouter plus de salles/étages ainsi que plus de défis et items. Nous pourrions aussi ajouter des "sorts" pour pouvoir manipuler des PNJ.
+
+Carte du jeu :
+                               [TOIT]                                              N
+                                 |                                                 ↑                                
+                                 |                                            O ←  0  → E                                                            
+                [DORTOIR]--[SALLE DE JEUX]--[BUREAU DU PRÉSIDENT]                  ↓
+                    |            |                     |                           S
+                    |            |                     | 
+            [SALLE DE SPORT]---[BAR]---------------[CUISINE]
+                    |            |
+                    |            | 
+                [CAVE]     [PORTE D'ENTRÉE]
