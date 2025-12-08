@@ -20,21 +20,8 @@ class Player():
         
         self.current_room = next_room
         
-        # Afficher uniquement la description, PAS les sorties
-        print(f"\nVous êtes {self.current_room.description}\n")
-        
-        # Marquer comme visitée
-        if not self.current_room.visited:
-            self.current_room.visited = True
-        
-        # Déclencher les événements de la salle
-        if hasattr(self.current_room, 'event'):
-            self.current_room.event(self)
-            # Afficher les sorties APRÈS l'événement
-            print(f"\n{self.current_room.get_exit_string()}\n")
-        else:
-            # Si pas d'événement, afficher les sorties immédiatement
-            print(f"\n{self.current_room.get_exit_string()}\n")
+        # Afficher la description complète avec personnages et sorties
+        print(self.current_room.get_long_description())
         
         return True
     
@@ -61,7 +48,6 @@ class Player():
         
         history_str = "\nVous avez déjà visité les pièces suivantes:\n"
         for i, room in enumerate(self.history, 1):
-            # Utiliser le nom de la salle (room.name) au lieu de la description (room.description)
             history_str += f"    {i}. {room.name}\n"
         return history_str
     
@@ -77,10 +63,6 @@ class Player():
         # Déplacer le joueur vers la salle précédente
         self.current_room = previous_room
         print(f"\n↩️  Retour en arrière...")
-        # Afficher uniquement la description
-        print(f"Vous êtes {self.current_room.description}\n")
-        
-        # Afficher les sorties pour la salle de retour
-        print(f"{self.current_room.get_exit_string()}\n")
+        print(self.current_room.get_long_description())
         
         return True

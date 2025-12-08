@@ -3,6 +3,7 @@ from player import Player
 from command import Command
 from actions import Actions
 from events import *
+from character import Character  # Nouvelle importation
 
 class Game:
     def __init__(self):
@@ -28,33 +29,39 @@ class Game:
         # Ajout de la commande back
         back = Command("back", " : revenir à la salle précédente", Actions.back, 0)
         self.commands["back"] = back
+        # Ajout de la commande talk
+        talk = Command("talk", " <nom_personnage> : parler à un personnage", Actions.talk, 1)
+        self.commands["talk"] = talk
+        # Ajout de la commande look
+        look = Command("look", " : regarder autour de vous", Actions.look, 0)
+        self.commands["look"] = look
 
-        # 9 salles avec leurs événements
-        porte_entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik. La musique tonne de l'intérieur.", porte_entree_event)
+        # 9 salles sans événements d'entrée
+        porte_entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik. La musique tonne de l'intérieur.")
         self.rooms.append(porte_entree)
         
-        bar = Room("Bar", "dans le bar principal. Des bouteilles vides traînent partout.", bar_event)
+        bar = Room("Bar", "dans le bar principal. Des bouteilles vides traînent partout.")
         self.rooms.append(bar)
         
-        cuisine = Room("Cuisine", "dans la cuisine dégoûtante. De la nourriture pourrie traîne partout.", cuisine_event)
+        cuisine = Room("Cuisine", "dans la cuisine dégoûtante. De la nourriture pourrie traîne partout.")
         self.rooms.append(cuisine)
         
-        salle_jeux = Room("Salle de jeux", "dans la salle de jeux. Des consoles et écrans géants remplissent la pièce.", salle_jeux_event)
+        salle_jeux = Room("Salle de jeux", "dans la salle de jeux. Des consoles et écrans géants remplissent la pièce.")
         self.rooms.append(salle_jeux)
         
-        bureau_president = Room("Bureau du président", "dans le bureau luxueux du président. Des trophées et diplômes ornent les murs.", bureau_president_event)
+        bureau_president = Room("Bureau du président", "dans le bureau luxueux du président. Des trophées et diplômes ornent les murs.")
         self.rooms.append(bureau_president)
         
-        dortoir = Room("Dortoir", "dans le dortoir commun. Des vêtements sales traînent sur le sol.", dortoir_event)
+        dortoir = Room("Dortoir", "dans le dortoir commun. Des vêtements sales traînent sur le sol.")
         self.rooms.append(dortoir)
         
-        salle_sport = Room("Salle de sport", "dans la salle de sport privée. Des équipements dernier cri sont alignés.", salle_sport_event)
+        salle_sport = Room("Salle de sport", "dans la salle de sport privée. Des équipements dernier cri sont alignés.")
         self.rooms.append(salle_sport)
         
-        cave = Room("Cave", "dans la cave sombre et humide. Des rangées de bouteilles de vin s'alignent.", cave_event)
+        cave = Room("Cave", "dans la cave sombre et humide. Des rangées de bouteilles de vin s'alignent.")
         self.rooms.append(cave)
         
-        toit = Room("Toit", "sur le toit de la fraternité. La vue sur le campus est magnifique.", toit_event)
+        toit = Room("Toit", "sur le toit de la fraternité. La vue sur le campus est magnifique.")
         self.rooms.append(toit)
 
         # Configuration des sorties
@@ -67,6 +74,32 @@ class Game:
         salle_sport.exits = {"N": dortoir, "E": bar, "S": cave, "O": None}
         cave.exits = {"N": salle_sport, "E": None, "S": None, "O": None}
         toit.exits = {"N": None, "E": None, "S": salle_jeux, "O": None}
+
+        # Ajout des personnages avec leurs événements
+        # Porte d'entrée
+        garde = Character("Garde", "un membre de Mystik qui surveille l'entrée", porte_entree_event)
+        porte_entree.add_character(garde)
+        
+        # Bar
+        membre_ivre = Character("Membre Ivre", "un membre de Mystik visiblement éméché", bar_event)
+        bar.add_character(membre_ivre)
+        
+        # Cuisine (pas de personnage, mais événement spécial sur "look")
+        # Salle de jeux
+        champion = Character("Champion", "le champion de jeux vidéo de Mystik", salle_jeux_event)
+        salle_jeux.add_character(champion)
+        
+        # Bureau du président (pas de personnage visible immédiatement)
+        # Dortoir (pas de personnage, événement spécial)
+        # Salle de sport
+        capitaine = Character("Capitaine", "le capitaine de l'équipe de boxe", salle_sport_event)
+        salle_sport.add_character(capitaine)
+        
+        # Cave
+        vieux_membre = Character("Vieux Membre", "un ancien membre qui raconte des histoires", cave_event)
+        cave.add_character(vieux_membre)
+        
+        # Toit (pas de personnage, événement spécial)
 
         # Configuration du joueur
         self.player = Player(input("\nEntrez votre nom: "))
@@ -118,6 +151,7 @@ class Game:
         print("Utilisez 'help' pour voir les commandes disponibles.")
         print("Santé: 100/100")
         print(self.player.current_room.get_long_description())
+        print("💡 Astuce: Utilisez 'talk <nom>' pour parler aux personnages et 'look' pour explorer les salles.")
 
 def main():
     try:

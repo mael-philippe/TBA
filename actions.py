@@ -125,3 +125,64 @@ class Actions:
             # Afficher l'historique après un retour réussi
             print(player.get_history())
         return success
+
+    def talk(game, list_of_words, number_of_parameters):
+        """
+        Parler à un personnage.
+        """
+        player = game.player
+        l = len(list_of_words)
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(MSG1.format(command_word=command_word))
+            return False
+        
+        character_name = list_of_words[1]
+        current_room = player.current_room
+        
+        # Vérifier si le personnage existe dans la salle
+        success = current_room.interact_with_character(character_name, player)
+        if not success:
+            print(f"\nIl n'y a personne nommé '{character_name}' ici.\n")
+            print("Personnes présentes:")
+            for character in current_room.characters:
+                print(f"  - {character.name}")
+            print()
+        return success
+
+    def look(game, list_of_words, number_of_parameters):
+        """
+        Regarder autour de soi (pour les événements sans personnage).
+        """
+        l = len(list_of_words)
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(MSG0.format(command_word=command_word))
+            return False
+        
+        player = game.player
+        current_room = player.current_room
+        
+        # Événements spéciaux pour certaines salles quand on utilise "look"
+        room_name = current_room.name
+        
+        if room_name == "Cuisine" and not current_room.event_triggered:
+            cuisine_look_event(player)
+            current_room.event_triggered = True
+            return True
+        elif room_name == "Dortoir" and not current_room.event_triggered:
+            dortoir_look_event(player)
+            current_room.event_triggered = True
+            return True
+        elif room_name == "Bureau du président" and not current_room.event_triggered:
+            bureau_president_look_event(player)
+            current_room.event_triggered = True
+            return True
+        elif room_name == "Toit" and not current_room.event_triggered:
+            toit_look_event(player)
+            current_room.event_triggered = True
+            return True
+        else:
+            print("\nVous regardez autour de vous...")
+            print(current_room.get_long_description())
+            return True
