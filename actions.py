@@ -17,9 +17,16 @@ class Actions:
             print(MSG1.format(command_word=command_word))
             return False
 
-        direction = list_of_words[1]
-        player.move(direction)
-        return True
+        direction = list_of_words[1].upper()
+        if direction not in ["N", "E", "S", "O"]:
+            print(f"\nDirection '{direction}' non valide. Les directions possibles sont: N (Nord), E (Est), S (Sud), O (Ouest).\n")
+            return False
+        
+        success = player.move(direction)
+        if success:
+            # Afficher l'historique après chaque déplacement réussi
+            print(player.get_history())
+        return success
 
     def quit(game, list_of_words, number_of_parameters):
         """
@@ -87,3 +94,34 @@ class Actions:
             print(f"\n🎒 {player.name} n'a aucun objet dans l'inventaire.")
         print()
         return True
+
+    def history(game, list_of_words, number_of_parameters):
+        """
+        Afficher l'historique des salles visitées.
+        """
+        l = len(list_of_words)
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(MSG0.format(command_word=command_word))
+            return False
+        
+        player = game.player
+        print(player.get_history())
+        return True
+
+    def back(game, list_of_words, number_of_parameters):
+        """
+        Revenir à la salle précédente.
+        """
+        l = len(list_of_words)
+        if l != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(MSG0.format(command_word=command_word))
+            return False
+        
+        player = game.player
+        success = player.go_back()
+        if success:
+            # Afficher l'historique après un retour réussi
+            print(player.get_history())
+        return success

@@ -22,6 +22,12 @@ class Game:
         self.commands["status"] = status
         inventory = Command("inventory", " : afficher votre inventaire", Actions.inventory, 0)
         self.commands["inventory"] = inventory
+        # Ajout de la commande history
+        history = Command("history", " : afficher l'historique des salles visitées", Actions.history, 0)
+        self.commands["history"] = history
+        # Ajout de la commande back
+        back = Command("back", " : revenir à la salle précédente", Actions.back, 0)
+        self.commands["back"] = back
 
         # 9 salles avec leurs événements
         porte_entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik. La musique tonne de l'intérieur.", porte_entree_event)
@@ -65,6 +71,8 @@ class Game:
         # Configuration du joueur
         self.player = Player(input("\nEntrez votre nom: "))
         self.player.current_room = porte_entree
+        # Initialiser l'historique avec la salle de départ
+        self.player.history.append(porte_entree)
 
     def play(self):
         self.setup()
