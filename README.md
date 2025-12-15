@@ -2,13 +2,13 @@ Infiltration Mystik - Jeu d'Aventure Textuel
 Guide Utilisateur
 Installation et Lancement
 
-La première version du jeu se joue dans le terminal et utilise les 7 fichiers .py (actions, character, command, events, game, player & room). Pour initier la partie, il faut ouvrir ces fichiers et exécuter le programme game.py.
+Le jeu se joue dans le terminal et utilise les 8 fichiers .py (actions, character, command, events, game, item, player & room). Pour initier la partie, exécutez le programme game.py.
 Contexte du Jeu
 
-Le jeu se déroule dans une université. Le but du jeu est de s'infiltrer dans une fraternité adverse à celle du joueur et la faire capituler à travers de nombreuses interactions et épreuves. Le joueur fait partie de la fraternité Banditos et la fraternité ennemie est Mystik.
+Le jeu se déroule dans une université. Le but du jeu est de s'infiltrer dans la fraternité Mystik, collecter des preuves compromettantes et la faire capituler. Vous êtes membre de la fraternité Banditos.
 Objectif
 
-Pour gagner, il faut collecter suffisamment de preuves compromettantes sur les Mystik tout en restant en vie, car certaines interactions peuvent faire perdre au joueur des points de vie.
+Collecter suffisamment de preuves (au moins 2) sur les Mystik tout en restant en vie. Certaines interactions peuvent vous faire perdre des points de vie.
 Commandes Disponibles
 Déplacement et Navigation
 
@@ -16,192 +16,268 @@ Déplacement et Navigation
 
     back : revenir à la salle précédente
 
-    look : observer attentivement la salle actuelle (déclenche parfois des événements)
+    look : observer attentivement la salle actuelle
+
+Gestion des Objets
+
+    take <nom_objet> : prendre un objet dans la salle (ex: take Clé USB, take Documents)
+
+    drop <nom_objet> : déposer un objet de votre inventaire dans la salle
+
+    check : vérifier le contenu de votre inventaire avec le poids actuel
+
+    Astuce : Les noms composés sont acceptés (ex: take Clé USB, drop Bouteille de vin)
 
 Interactions Sociales
 
     talk <nom_personnage> : parler à un personnage présent dans la salle
 
-    Exemples : talk Garde, talk Champion, talk Vieux Membre
+    Personnages disponibles : Garde, Ivre, Champion, Capitaine, Vieux
 
-Gestion du Personnage
+Information et Aide
 
     status : afficher votre état de santé et vos statistiques
 
-    inventory : afficher votre inventaire
-
     history : afficher l'historique des salles visitées
-
-Commandes Système
 
     help : afficher la liste des commandes disponibles
 
     quit : quitter le jeu
 
 Mécaniques de Jeu
+Système d'Inventaire
+
+    Capacité : 20 kg maximum
+
+    Poids des objets : Chaque objet a un poids différent
+
+    Affichage : check montre le poids actuel/20 kg
+
+    Messages : Confirmations claires quand vous prenez/déposez des objets
+
 Points de Vie
 
-    Démarrez avec 100 points de vie
+    Démarrage : 100 points de vie
 
-    Certaines interactions peuvent vous faire perdre des points de vie
+    Perte de vie : Certaines interactions vous font perdre des points
 
-    Si vos points de vie tombent à 0, c'est Game Over
+    Game Over : Si vos points tombent à 0
 
-    Vous pouvez récupérer de la vie en trouvant des objets ou en faisant les bons choix
-
-Inventaire
-
-    Collectez des preuves compromettantes pour faire tomber les Mystik
-
-    Certains objets sont essentiels pour gagner la partie
-
-    Utilisez inventory pour vérifier ce que vous avez collecté
+    Soins : Certains objets/choix restaurent de la vie
 
 Personnages Interactifs
 
-Chaque salle peut contenir des personnages avec lesquels vous pouvez interagir :
+Chaque personnage propose des défis différents :
 
-    Garde à l'entrée : contrôle l'accès à la fraternité
+    Garde (Porte d'entrée) : contrôle l'accès
 
-    Membre Ivre au bar : propose des défis alcoolisés
+    Ivre (Bar) : défis alcoolisés
 
-    Champion en salle de jeux : maître des jeux vidéo
+    Champion (Salle de jeux) : jeux vidéo
 
-    Capitaine en salle de sport : expert en combat
+    Capitaine (Salle de sport) : combat de boxe
 
-    Vieux Membre dans la cave : détenteur de secrets
+    Vieux (Cave) : histoires et secrets
 
-Exploration
+Objets à Collecter
 
-Utilisez look pour explorer les salles sans personnage :
+    Preuves : Documents, Photos, Livre des secrets, Clé USB
 
-    Cuisine : cherchez de la nourriture et des boissons
+    Utilitaires : RedBull, Trousse de secours, Pizza
 
-    Dortoir : trouvez des objets utiles
-
-    Bureau du président : recherchez des preuves compromettantes
-
-    Toit : découvrez le livre des secrets
+    Spéciaux : Beamer (téléportation), Bouteille de vin rare
 
 Conseils de Jeu
 
-    Parlez à tous les personnages que vous rencontrez
+    Parlez à tous les personnages pour découvrir des objets cachés
 
-    Explorez chaque salle avec look pour ne rien manquer
+    Utilisez look dans chaque salle pour ne rien manquer
 
-    Faites attention à vos points de vie
+    Surveillez votre poids avec check (limite 20 kg)
 
-    Collectez au moins 2 preuves compromettantes pour gagner
+    Collectez au moins 2 preuves pour gagner
 
-    Utilisez back pour revenir sur vos pas si nécessaire
+    Faites attention à votre santé avec status
 
 Guide Développeur
-Architecture du Jeu
+Architecture du Projet
+text
 
-Le jeu suit une architecture orientée objet avec les classes suivantes :
+TBA-main/
+├── actions.py          # Implémentation des commandes
+├── character.py        # Classe Character pour les PNJ
+├── command.py          # Système de commandes
+├── events.py           # Événements d'interaction
+├── game.py             # Point d'entrée principal
+├── item.py             # Classe Item pour les objets
+├── player.py           # Classe Player avec inventaire
+├── room.py             # Classe Room avec inventaire
+└── README.md           # Documentation
+
 Diagrammes de Classes
-<img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" />
+<img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7a22" /><img width="1755" height="844" alt="Diagramme de Classe Command" src="https://github.com/user-attachments/assets/70279d1d-614e-4071-879a-1447cdc63d9a" /><img width="1735" height="924" alt="Diagramme de Classe Actions" src="https://github.com/user-attachments/assets/96c05ce0-90f0-4d57-8823-b194d08ff618" />
+Système d'Inventaire - Conception
+1. Classe Item (item.py)
+python
 
-<img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7a22" />
+class Item:
+    def __init__(self, name, description, weight):
+        self.name = name          # Nom de l'objet
+        self.description = description  # Description
+        self.weight = weight      # Poids en kg
+    
+    def __str__(self):
+        return f"{self.name} : {self.description} ({self.weight} kg)"
 
-<img width="1755" height="844" alt="Diagramme de Classe Command" src="https://github.com/user-attachments/assets/70279d1d-614e-4071-879a-1447cdc63d9a" />
+2. Inventaire du Joueur (player.py)
 
-<img width="1735" height="924" alt="Diagramme de Classe Actions" src="https://github.com/user-attachments/assets/96c05ce0-90f0-4d57-8823-b194d08ff618" />
+Structure de données choisie : Liste
 
-    name : nom du personnage
+    self.inventory = [] : Liste d'objets Item
 
-    description : description du personnage
+    self.max_weight = 20.0 : Limite de poids
 
-    interaction_event : fonction d'interaction
+    self.current_weight : Calcul dynamique
 
-    already_interacted : état de l'interaction
+Fonctions clés :
 
-Classe Room (modifiée)
+    add_item(item) : Ajoute avec vérification de poids
 
-    characters : liste des personnages présents
+    remove_item(item_name) : Retire (insensible à la casse)
 
-    event_triggered : pour les événements de type "look"
+    get_current_weight() : Calcule le poids total
 
-    Méthodes ajoutées :
+    can_take_item(item) : Vérifie la capacité
 
-        add_character() : ajouter un personnage
+    get_inventory_string() : Formatage d'affichage
 
-        interact_with_character() : interagir avec un personnage spécifique
+3. Inventaire des Salles (room.py)
 
-Classe Player (modifiée)
+Même structure pour cohérence :
 
-    history : historique des salles visitées
+    self.inventory = [] : Liste d'objets Item
 
-    Méthode move() : affiche maintenant les personnages présents
+    Méthodes similaires à Player pour l'interface
 
-Système d'Événements
+Gestion des Commandes
+Validation des Paramètres
+python
 
-    Événements sociaux : déclenchés par talk <nom>
+def take(game, list_of_words, number_of_parameters):
+    l = len(list_of_words)
+    if l < 2:  # Vérifie qu'il y a au moins commande + paramètre
+        print(f"La commande '{list_of_words[0]}' prend 1 paramètre.")
+        return False
 
-    Événements d'exploration : déclenchés par look
+Gestion des Noms Composés
+python
 
-Fichiers du Projet
+# "take Clé USB spéciale" → ["take", "Clé", "USB", "spéciale"]
+item_name_parts = list_of_words[1:]  # ["Clé", "USB", "spéciale"]
+item_name = " ".join(item_name_parts)  # "Clé USB spéciale"
 
-    game.py : Point d'entrée principal, gestion du jeu
+Recherche Insensible à la Casse
+python
 
-    player.py : Classe du joueur et gestion des déplacements
+def remove_item(self, item_name):
+    item_name_lower = item_name.lower()  # "clé usb"
+    for item in self.inventory:
+        if item.name.lower() == item_name_lower:  # Compare en minuscules
+            return self.inventory.pop(i)
 
-    room.py : Classe des salles avec personnages
+Flux de Données
+text
 
-    character.py : Nouvelle classe pour les personnages interactifs
+┌─────────┐    take    ┌─────────┐
+│  Salle  │───────────▶│ Joueur  │
+│inventory│◀───────────│inventory│
+└─────────┘    drop    └─────────┘
+     │                       │
+     │ add_item()            │ get_inventory_string()
+     │ remove_item()         │ check command
+     ▼                       ▼
+┌─────────────────┐   ┌──────────────────┐
+│ Room.get_item() │   │ Player.check()   │
+└─────────────────┘   └──────────────────┘
 
-    command.py : Système de commandes
+Caractéristiques Techniques
+1. Séparation des responsabilités
 
-    actions.py : Implémentation des actions
+    Item : Définition des objets
 
-    events.py : Événements d'interaction et d'exploration
+    Player : Gestion de l'inventaire personnel
 
-Flux du Programme
+    Room : Gestion des objets dans l'environnement
 
-    Initialisation du jeu dans Game.setup()
+    Actions : Implémentation des commandes
 
-    Création des salles et ajout des personnages
+2. Validation robuste
 
-    Boucle principale de traitement des commandes
+    Vérification du poids maximum
 
-    Gestion des interactions via le système de commandes
+    Messages d'erreur explicites
 
-Ajout de Nouveaux Contenus
-Pour ajouter un nouveau personnage :
+    Gestion des cas limites (objet non trouvé, inventaire plein)
 
-    Créer une fonction d'événement dans events.py
+3. Interface utilisateur avancée
 
-    Créer une instance de Character dans game.py
+    Noms composés acceptés (take Clé USB)
 
-    L'ajouter à une salle avec add_character()
+    Insensibilité à la casse (take clé usb, take CLÉ USB)
 
-Pour ajouter une nouvelle salle :
+    Messages de confirmation avec emojis
 
-    Créer une instance de Room dans game.py
+    Affichage formaté du poids
 
-    Configurer ses sorties
+4. Extensibilité
 
-    Ajouter des personnages si nécessaire
+    Ajout facile de nouveaux objets
 
-Pour ajouter une nouvelle commande :
+    Structure prête pour objets spéciaux (clés, potions, etc.)
 
-    Ajouter la méthode dans Actions (actions.py)
+    Séparation claire entre données et logique
 
-    Créer la Command correspondante dans Game.setup()
+Exemple d'Exécution
+text
 
-    Mettre à jour le message d'aide
+> look
+Vous êtes dans la salle de jeux...
+Objets dans la salle:
+    1. Clé USB : clé USB avec des données sensibles (0.1 kg)
 
-Perspectives de Développement
+> take Clé USB
+🎒 Vous avez pris 'Clé USB'.
 
-Pour améliorer notre jeu, nous pourrions :
+> check
+🎒 Inventaire (0.1/20 kg):
+    1. Clé USB : clé USB avec des données sensibles (0.1 kg)
 
-    Contenu additionnel :
+> drop clé usb  
+📦 Vous avez déposé 'Clé USB'.
 
-        Ajouter plus de salles/étages
+Fonctionnalités Implémentées
 
-        Créer plus de personnages avec des dialogues variés
+- Système d'objets complet avec poids et descriptions
+- Double inventaire (joueur + salles) avec transfert
+- Limite de poids (20 kg maximum)
+- Commandes avancées avec noms composés
+- Recherche insensible à la casse
+- Messages d'erreur et de confirmation
+- Historique des déplacements
+- Système de santé avec soins et dégâts
+- Personnages interactifs avec dialogues
+- Sauvegarde automatique de l'historique
+- Perspectives d'Amélioration
 
-        Ajouter des objets interactifs supplémentaires
+    Objets spéciaux :
+
+        Beamer (téléportation)
+
+        Clés pour portes verrouillées
+
+        Potions de soin instantané
+
+        Cartes pour navigation
 
     Améliorations techniques :
 
@@ -211,45 +287,52 @@ Pour améliorer notre jeu, nous pourrions :
 
         Effets sonores
 
-    Gameplay avancé :
-
-        Système de compétences ou de sorts
-
-        Quêtes secondaires
-
-        Système de réputation avec les Mystik
-
-        Événements aléatoires
-
-    Expérience utilisateur :
-
-        Système de hints/intelligence artificielle
-
         Journal de quêtes
 
-        Carte du monde accessible
+    Contenu additionnel :
 
-        Difficultés ajustables
-
-    Contenu narratif :
-
-        Histoire plus développée
+        Plus de salles et d'étages
 
         Dialogues branches avec conséquences
 
-        Personnages récurrents avec développements
+        Quêtes secondaires
 
-        Plusieurs fins possibles
+        Système de réputation
 
-Notes Techniques
+    Gameplay avancé :
 
-    Le jeu utilise un système de commandes modulaire
+        Combats tour par tour
 
-    Les interactions sont gérées par des fonctions d'événement
+        Compétences et sorts
 
-    L'historique des salles est implémenté avec une pile
+        Crafting d'objets
 
-    Le système de santé et d'inventaire est simple mais extensible
+        Événements aléatoires
+
+Notes de Conception
+Choix de la liste pour l'inventaire
+
+    Avantages : Conservation de l'ordre d'acquisition, parcours simple
+
+    Alternative envisagée : Dictionnaire pour accès rapide par nom
+
+    Décision : Liste pour simplicité et cohérence avec l'affichage numéroté
+
+Gestion du poids
+
+    Calcul dynamique à chaque ajout/suppression
+
+    Vérification avant transfert pour éviter les états invalides
+
+    Affichage clair du poids restant
+
+Messages utilisateur
+
+    Emojis pour améliorer l'expérience visuelle
+
+    Messages différents pour succès/échec
+
+    Formatage cohérent pour toutes les commandes
 
 Carte du jeu :
                                [TOIT]                                              N
