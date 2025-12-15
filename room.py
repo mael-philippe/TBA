@@ -6,6 +6,7 @@ class Room:
         self.visited = False
         self.characters = []  # Liste des personnages présents dans la salle
         self.event_triggered = False  # Pour certains événements spéciaux
+        self.inventory = []  # Inventaire des objets dans la salle
     
     def add_character(self, character):
         """Ajouter un personnage à la salle"""
@@ -42,8 +43,39 @@ class Room:
         self.event_triggered = False
     
     def interact_with_character(self, character_name, player):
-        """Interagir avec un personnage spécifique"""
+        """Interagir avec un personnage spécifique (insensible à la casse)"""
+        character_name_lower = character_name.lower()
         for character in self.characters:
-            if character.name.lower() == character_name.lower():
+            if character.name.lower() == character_name_lower:
                 return character.interact(player)
         return False
+    
+    def get_inventory_string(self):
+        """Retourne une chaîne décrivant les objets dans la salle"""
+        if not self.inventory:
+            return "\nIl n'y a rien ici.\n"
+        
+        inventory_str = "\nObjets dans la salle:\n"
+        for i, item in enumerate(self.inventory, 1):
+            inventory_str += f"    {i}. {item}\n"
+        return inventory_str
+    
+    def add_item(self, item):
+        """Ajouter un objet à la salle"""
+        self.inventory.append(item)
+    
+    def remove_item(self, item_name):
+        """Retirer un objet de la salle par son nom (insensible à la casse)"""
+        item_name_lower = item_name.lower()
+        for i, item in enumerate(self.inventory):
+            if item.name.lower() == item_name_lower:
+                return self.inventory.pop(i)
+        return None
+    
+    def get_item(self, item_name):
+        """Récupérer un objet par son nom sans le retirer (insensible à la casse)"""
+        item_name_lower = item_name.lower()
+        for item in self.inventory:
+            if item.name.lower() == item_name_lower:
+                return item
+        return None

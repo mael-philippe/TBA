@@ -1,7 +1,12 @@
 import random
+from item import Item
 
-# Événements déclenchés en parlant aux personnages
+# ============================================
+# ÉVÉNEMENTS POUR LA COMMANDE "TALK" (personnages)
+# ============================================
+
 def porte_entree_event(player):
+    """Événement déclenché par 'talk Garde'"""
     print("\n🎵 La musique assourdissante de la fête résonne.")
     print("Le garde vous arrête: 'Hé, tu as l'air perdu, première année?'")
     print("Choix: 1) Faire le fier 2) Jouer l'innocent")
@@ -15,6 +20,7 @@ def porte_entree_event(player):
     return True
 
 def bar_event(player):
+    """Événement déclenché par 'talk Ivre'"""
     print("\n🍻 Le membre ivre vous défie de finir un 'Mystik on the Beach'.")
     print("Choix: 1) Accepter le défi 2) Refuser poliment")
     
@@ -28,6 +34,7 @@ def bar_event(player):
     return True
 
 def salle_jeux_event(player):
+    """Événement déclenché par 'talk Champion'"""
     print("\n🎮 Le champion vous défie à un jeu vidéo.")
     print("Choix: 1) Accepter le duel 2) Observer seulement")
     
@@ -35,7 +42,10 @@ def salle_jeux_event(player):
     if choix == "1":
         if random.random() > 0.5:
             print("\n🎉 Vous gagnez! Les membres sont impressionnés.")
-            player.add_item("Clé USB mysterieuse")
+            # Ajouter la clé USB à la salle
+            cle_usb = Item("Clé USB", "clé USB avec des données sensibles des Mystik", 0.1)
+            player.current_room.add_item(cle_usb)
+            print(f"✓ {cle_usb.name} a été ajoutée à la salle!")
         else:
             print("\n💥 Vous perdez honteusement. Le champion vous humilie.")
             player.take_damage(10)
@@ -44,6 +54,7 @@ def salle_jeux_event(player):
     return True
 
 def salle_sport_event(player):
+    """Événement déclenché par 'talk Capitaine'"""
     print("\n💪 Le capitaine vous défie à un combat de boxe.")
     print("Choix: 1) Se battre 2) Inventer une excuse")
     
@@ -57,14 +68,27 @@ def salle_sport_event(player):
     return True
 
 def cave_event(player):
+    """Événement déclenché par 'talk Vieux'"""
     print("\n🍷 Le vieux membre vous raconte des histoires du passé.")
     print("Il vous offre une bouteille de vin rare.")
-    player.add_item("Bouteille de vin rare")
-    print("✓ Objet de valeur obtenu!")
+    
+    # Ajouter la bouteille de vin à la salle
+    bouteille_vin = Item("Bouteille de vin", "bouteille de vin rare des Mystik", 1.5)
+    player.current_room.add_item(bouteille_vin)
+    print(f"✓ {bouteille_vin.name} a été ajoutée à la salle!")
+    
+    # Le vieux membre donne aussi un indice
+    print("\n🤫 Le vieux membre vous murmure: 'Cherche sur le toit... les secrets y sont cachés.'")
     return True
 
-# Événements déclenchés par la commande "look"
+# ============================================
+# ÉVÉNEMENTS POUR LA COMMANDE "LOOK" (exploration)
+# ============================================
+# NOTE: Ces événements ne sont PAS utilisés dans la version actuelle
+# Ils sont gardés pour référence future
+
 def cuisine_look_event(player):
+    """Événement spécial pour 'look' dans la cuisine"""
     print("\n🍕 Vous regardez autour de la cuisine...")
     print("Vous trouvez une pizza à moitié mangée et des RedBulls.")
     print("Choix: 1) Manger la pizza 2) Prendre une RedBull")
@@ -79,6 +103,7 @@ def cuisine_look_event(player):
     return True
 
 def dortoir_look_event(player):
+    """Événement spécial pour 'look' dans le dortoir"""
     print("\n🛏️ Vous regardez sous les lits...")
     print("Sous un lit, vous trouvez une trousse de secours.")
     player.heal(30)
@@ -86,6 +111,7 @@ def dortoir_look_event(player):
     return True
 
 def bureau_president_look_event(player):
+    """Événement spécial pour 'look' dans le bureau"""
     print("\n🚨 Vous regardez sur le bureau...")
     print("Des documents compromettants sont éparpillés!")
     print("Choix: 1) Prendre les documents 2) Prendre une photo discrètement")
@@ -93,22 +119,27 @@ def bureau_president_look_event(player):
     choix = input("Votre choix (1/2): ")
     if choix == "1":
         print("\n📁 Vous prenez les documents! C'est la preuve ultime!")
-        player.add_item("Documents compromettants")
+        # Ajouter les documents à la salle
+        documents = Item("Documents", "documents compromettants sur les Mystik", 0.5)
+        player.current_room.add_item(documents)
+        print(f"✓ {documents.name} ont été ajoutés à la salle!")
     else:
         print("\n📸 Photo prise! Preuve obtenue mais moins convaincante.")
-        player.add_item("Photo compromettante")
+        # Ajouter une photo à la salle
+        photo = Item("Photo", "photo compromettante du président", 0.2)
+        player.current_room.add_item(photo)
+        print(f"✓ Une {photo.name} a été ajoutée à la salle!")
     return True
 
 def toit_look_event(player):
+    """Événement spécial pour 'look' sur le toit"""
     print("\n🌃 Vous explorez le toit...")
     print("Vous trouvez le livre des secrets des Mystik!")
-    player.add_item("Livre des secrets")
     
-    # Vérifier si le joueur a collecté suffisamment de preuves
-    preuves = [item for item in player.inventory if "compromettant" in item.lower() or "secret" in item.lower() or "clé" in item.lower()]
-    if len(preuves) >= 2:
-        print("\n🎉 FÉLICITATIONS! Vous avez assez de preuves pour faire tomber Mystik!")
-        print("Mission accomplie! Les Banditos vous remercieront éternellement!")
-    else:
-        print("\n⚠️ Vous avez le livre, mais il vous faut plus de preuves. Continuez à chercher!")
+    # Ajouter le livre à la salle
+    livre_secrets = Item("Livre", "livre des secrets des Mystik", 1.0)
+    player.current_room.add_item(livre_secrets)
+    print(f"✓ Le {livre_secrets.name} a été ajouté à la salle!")
+    
+    print("\n⚠️ Prenez ce livre comme preuve! Vous aurez besoin d'au moins 2 preuves.")
     return True

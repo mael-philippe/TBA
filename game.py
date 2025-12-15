@@ -3,7 +3,8 @@ from player import Player
 from command import Command
 from actions import Actions
 from events import *
-from character import Character  # Nouvelle importation
+from character import Character
+from item import Item
 
 class Game:
     def __init__(self):
@@ -21,8 +22,9 @@ class Game:
         self.commands["go"] = go
         status = Command("status", " : afficher votre état", Actions.status, 0)
         self.commands["status"] = status
-        inventory = Command("inventory", " : afficher votre inventaire", Actions.inventory, 0)
-        self.commands["inventory"] = inventory
+        # Commande check (remplace inventory)
+        check = Command("check", " : vérifier votre inventaire", Actions.check, 0)
+        self.commands["check"] = check
         # Ajout de la commande history
         history = Command("history", " : afficher l'historique des salles visitées", Actions.history, 0)
         self.commands["history"] = history
@@ -35,6 +37,27 @@ class Game:
         # Ajout de la commande look
         look = Command("look", " : regarder autour de vous", Actions.look, 0)
         self.commands["look"] = look
+        # NOUVELLES COMMANDES
+        take = Command("take", " <nom_objet> : prendre un objet", Actions.take, 1)
+        self.commands["take"] = take
+        drop = Command("drop", " <nom_objet> : déposer un objet", Actions.drop, 1)
+        self.commands["drop"] = drop
+
+        # Création des objets
+        # Objets de preuve
+        documents = Item("Documents", "documents compromettants sur les Mystik", 0.5)
+        photo = Item("Photo", "photo compromettante du président", 0.2)
+        livre_secrets = Item("Livre", "livre des secrets des Mystik", 1.0)
+        cle_usb = Item("Clé USB", "clé USB avec des données sensibles", 0.1)
+        
+        # Objets utiles
+        redbull = Item("RedBull", "boisson énergisante", 0.3)
+        trousse_secours = Item("Trousse", "trousse de premiers secours", 0.8)
+        bouteille_vin = Item("Bouteille", "bouteille de vin rare", 1.5)
+        pizza = Item("Pizza", "pizza à moitié mangée", 0.7)
+        
+        # Objet spécial : Beamer
+        beamer = Item("Beamer", "appareil de téléportation magique", 2.0)
 
         # 9 salles sans événements d'entrée
         porte_entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik. La musique tonne de l'intérieur.")
@@ -64,6 +87,17 @@ class Game:
         toit = Room("Toit", "sur le toit de la fraternité. La vue sur le campus est magnifique.")
         self.rooms.append(toit)
 
+        # Ajouter des objets aux salles
+        porte_entree.add_item(redbull)
+        bar.add_item(bouteille_vin)
+        cuisine.add_item(pizza)
+        salle_jeux.add_item(cle_usb)
+        bureau_president.add_item(documents)
+        bureau_president.add_item(photo)
+        dortoir.add_item(trousse_secours)
+        cave.add_item(beamer)  # Beamer dans la cave
+        toit.add_item(livre_secrets)
+
         # Configuration des sorties
         porte_entree.exits = {"N": bar, "E": None, "S": None, "O": None}
         bar.exits = {"N": salle_jeux, "E": cuisine, "S": porte_entree, "O": salle_sport}
@@ -81,7 +115,7 @@ class Game:
         porte_entree.add_character(garde)
         
         # Bar
-        membre_ivre = Character("Membre Ivre", "un membre de Mystik visiblement éméché", bar_event)
+        membre_ivre = Character("Ivre", "un membre de Mystik visiblement éméché", bar_event)
         bar.add_character(membre_ivre)
         
         # Cuisine (pas de personnage, mais événement spécial sur "look")
@@ -96,7 +130,7 @@ class Game:
         salle_sport.add_character(capitaine)
         
         # Cave
-        vieux_membre = Character("Vieux Membre", "un ancien membre qui raconte des histoires", cave_event)
+        vieux_membre = Character("Vieux", "un ancien membre qui raconte des histoires", cave_event)
         cave.add_character(vieux_membre)
         
         # Toit (pas de personnage, événement spécial)
@@ -104,7 +138,6 @@ class Game:
         # Configuration du joueur
         self.player = Player(input("\nEntrez votre nom: "))
         self.player.current_room = porte_entree
-        # Initialiser l'historique avec la salle de départ
         self.player.history.append(porte_entree)
 
     def play(self):
@@ -150,8 +183,9 @@ class Game:
         print("Votre mission: Infiltrer la fraternité Mystik et collecter des preuves compromettantes.")
         print("Utilisez 'help' pour voir les commandes disponibles.")
         print("Santé: 100/100")
+        print("Capacité d'inventaire: 20 kg")
         print(self.player.current_room.get_long_description())
-        print("💡 Astuce: Utilisez 'talk <nom>' pour parler aux personnages et 'look' pour explorer les salles.")
+
 
 def main():
     try:
