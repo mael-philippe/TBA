@@ -42,6 +42,9 @@ class Game:
         self.commands["take"] = take
         drop = Command("drop", " <nom_objet> : déposer un objet", Actions.drop, 1)
         self.commands["drop"] = drop
+        # Ajout de la commande map
+        map_cmd = Command("map", " : afficher la carte de la fraternité", Actions.map, 0)
+        self.commands["map"] = map_cmd
 
         # Création des objets
         # Objets de preuve
@@ -185,6 +188,71 @@ class Game:
         print("Santé: 100/100")
         print("Capacité d'inventaire: 20 kg")
         print(self.player.current_room.get_long_description())
+    
+    def show_map(self):
+        """Affiche la carte ASCII de la fraternité"""
+        print("\n" + "="*60)
+        print("CARTE DE LA FRATERNITÉ MYSTIK")
+        print("="*60)
+        
+        # Déterminer où se trouve le joueur
+        player_room = self.player.current_room.name if self.player.current_room else "Inconnu"
+        
+        # Carte ASCII de la fraternité
+        map_ascii = """
+                               [TOIT]                                              
+                                 |                                                 
+                                 |                                              
+                [DORTOIR]--[SALLE DE JEUX]--[BUREAU DU PRÉSIDENT]                   
+                    |            |                     |                           
+                    |            |                     | 
+            [SALLE DE SPORT]---[BAR]---------------[CUISINE]
+                    |            |
+                    |            | 
+                [CAVE]     [PORTE D'ENTRÉE]
+        """
+        
+        # Remplacer la salle actuelle par [X]
+        room_replacements = {
+            "Toit": "[TOIT]",
+            "Dortoir": "[DORTOIR]",
+            "Salle de jeux": "[SALLE DE JEUX]",
+            "Bureau du président": "[BUREAU DU PRÉSIDENT]",
+            "Salle de sport": "[SALLE DE SPORT]",
+            "Bar": "[BAR]",
+            "Cuisine": "[CUISINE]",
+            "Cave": "[CAVE]",
+            "Porte d'entrée": "[PORTE D'ENTRÉE]"
+        }
+        
+        # Trouver et marquer la position du joueur
+        for room_name, ascii_name in room_replacements.items():
+            if room_name == player_room:
+                # Remplacer par [X] pour indiquer la position du joueur
+                map_ascii = map_ascii.replace(ascii_name, f"[{room_name[0]}]")
+                # Ajouter une explication
+                map_ascii = map_ascii.replace("CARTE DE LA FRATERNITÉ MYSTIK", 
+                                             f"CARTE DE LA FRATERNITÉ MYSTIK - Vous êtes dans: {player_room}")
+        
+        print(map_ascii)
+        print("\nLégende:")
+        print("  [X] = Vous êtes ici")
+        print("  [L] = Première lettre du nom de la salle")
+        print("  |    = Passage vertical")
+        print("  --   = Passage horizontal")
+        print()
+        
+        # Afficher les connexions détaillées de la salle actuelle
+        if self.player.current_room:
+            current = self.player.current_room
+            print(f"Connexions depuis {current.name}:")
+            directions = {"N": "Nord", "E": "Est", "S": "Sud", "O": "Ouest"}
+            for dir_code, dir_name in directions.items():
+                if current.exits.get(dir_code):
+                    print(f"  {dir_name} → {current.exits[dir_code].name}")
+                else:
+                    print(f"  {dir_name} → Aucune sortie")
+            print()
 
 
 def main():
