@@ -18,6 +18,8 @@ Déplacement et Navigation
 
     look : observer attentivement la salle actuelle
 
+    map : afficher la carte complète de la fraternité avec votre position (NOUVEAU)
+
 Gestion des Objets
 
     take <nom_objet> : prendre un objet dans la salle (ex: take Clé USB, take Documents)
@@ -98,6 +100,8 @@ Conseils de Jeu
     Collectez au moins 2 preuves pour gagner
 
     Faites attention à votre santé avec status
+
+    Utilisez map régulièrement pour ne pas vous perdre dans la fraternité
 
 Guide Développeur
 Architecture du Projet
@@ -185,6 +189,30 @@ def remove_item(self, item_name):
         if item.name.lower() == item_name_lower:  # Compare en minuscules
             return self.inventory.pop(i)
 
+Nouvelle Fonctionnalité : Commande Map
+python
+
+def map(game, list_of_words, number_of_parameters):
+    """
+    Afficher la carte de la fraternité.
+    """
+    l = len(list_of_words)
+    if l != number_of_parameters + 1:
+        command_word = list_of_words[0]
+        print(MSG0.format(command_word=command_word))
+        return False
+    
+    game.show_map()
+    return True
+
+La commande map affiche :
+
+1. Une carte ASCII de la fraternité avec les connexions entre salles
+2. Votre position actuelle marquée par [X]
+3. Les premières lettres des autres salles
+4. La légende des symboles utilisés
+5. Les connexions détaillées depuis votre salle actuelle
+
 Flux de Données
 text
 
@@ -229,6 +257,8 @@ Caractéristiques Techniques
 
     Affichage formaté du poids
 
+    Carte ASCII interactive avec positionnement
+
 4. Extensibilité
 
     Ajout facile de nouveaux objets
@@ -255,6 +285,35 @@ Objets dans la salle:
 > drop clé usb  
 📦 Vous avez déposé 'Clé USB'.
 
+> map
+
+============================================================
+CARTE DE LA FRATERNITÉ MYSTIK - Vous êtes dans: Salle de jeux
+============================================================
+
+                                [T]                                              
+                                 |                                                 
+                                 |                                            
+                   [D]----------[X]--------------------[B]                   
+                    |            |                      |                           
+                    |            |               -      | 
+                   [S]----------[A]--------------------[C]
+                    |            |
+                    |            | 
+                   [V]          [P]
+
+Légende:
+  [X] = Vous êtes ici
+  [L] = Première lettre du nom de la salle
+  |    = Passage vertical
+  --   = Passage horizontal
+
+Connexions depuis Salle de jeux:
+  Nord → Toit
+  Est → Bureau du président
+  Sud → Bar
+  Ouest → Dortoir
+
 Fonctionnalités Implémentées
 
 - Système d'objets complet avec poids et descriptions
@@ -267,7 +326,9 @@ Fonctionnalités Implémentées
 - Système de santé avec soins et dégâts
 - Personnages interactifs avec dialogues
 - Sauvegarde automatique de l'historique
-- Perspectives d'Amélioration
+- Carte ASCII interactive avec positionnement
+
+Perspectives d'Amélioration
 
     Objets spéciaux :
 
@@ -345,3 +406,18 @@ Carte du jeu :
                     |            |
                     |            | 
                 [CAVE]     [PORTE D'ENTRÉE]
+
+Mise à Jour : Nouvelle Commande Map
+
+La commande `map` a été ajoutée pour améliorer la navigation dans le jeu. Elle affiche :
+
+1. **Carte ASCII** : Représentation visuelle de la fraternité
+2. **Position du joueur** : Marquée par [X] sur la carte
+3. **Légende** : Explication des symboles utilisés
+4. **Connexions** : Liste des sorties disponibles depuis la salle actuelle
+
+Cette fonctionnalité aide les joueurs à :
+- Se repérer dans l'environnement complexe
+- Planifier leurs déplacements
+- Comprendre la structure de la fraternité
+- Ne pas se perdre lors de l'exploration
