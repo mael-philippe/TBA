@@ -5,9 +5,10 @@ class Player():
         self.health = 100
         self.max_health = 100
         self.inventory = []
-        self.history = []  # Historique des salles visitées
-        self.max_weight = 20.0  # Poids maximum transportable
-        self.current_weight = 0.0  # Poids actuel
+        self.history = []
+        self.max_weight = 20.0
+        self.current_weight = 0.0
+        self.earned_rewards = []  # Ajout pour stocker les récompenses
     
     def move(self, direction):
         next_room = self.current_room.exits[direction]
@@ -15,14 +16,11 @@ class Player():
             print("\nAucune porte dans cette direction !\n")
             return False
         
-        # Ajouter la salle actuelle à l'historique AVANT de se déplacer
-        # (sauf si c'est déjà la dernière salle de l'historique)
         if self.current_room and (not self.history or self.history[-1] != self.current_room):
             self.history.append(self.current_room)
         
         self.current_room = next_room
         
-        # Afficher la description complète avec personnages et sorties
         print(self.current_room.get_long_description())
         
         return True
@@ -32,7 +30,7 @@ class Player():
         if self.health <= 0:
             self.health = 0
             print(f"\n💀 {self.name} est K.O.! Mission échouée...\n")
-            return True  # Le joueur est mort
+            return True
         return False
     
     def heal(self, amount):
@@ -93,10 +91,8 @@ class Player():
             print("\nImpossible de revenir en arrière : historique vide !\n")
             return False
         
-        # Retirer la dernière salle de l'historique
         previous_room = self.history.pop()
         
-        # Déplacer le joueur vers la salle précédente
         self.current_room = previous_room
         print(f"\n↩️  Retour en arrière...")
         print(self.current_room.get_long_description())
@@ -112,3 +108,17 @@ class Player():
         for i, item in enumerate(self.inventory, 1):
             inventory_str += f"    {i}. {item}\n"
         return inventory_str
+    
+    def add_reward(self, reward_description):
+        """Ajouter une récompense au joueur"""
+        self.earned_rewards.append(reward_description)
+    
+    def get_rewards_string(self):
+        """Retourne une chaîne décrivant les récompenses du joueur"""
+        if not self.earned_rewards:
+            return "\n🎁 Aucune récompense gagnée pour le moment.\n"
+        
+        rewards_str = "\n🎁 RÉCOMPENSES GAGNÉES:\n"
+        for i, reward in enumerate(self.earned_rewards, 1):
+            rewards_str += f"    {i}. {reward}\n"
+        return rewards_str
