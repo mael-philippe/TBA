@@ -260,11 +260,12 @@ class Game:
             return False
 
     def print_welcome(self):
-        print(f"\n{'='*50}\nBIENVENUE DANS 'INFILTRATION MYSTIK'\n{'='*50}")
+        print(f"\n{'='*50}\nBIENVENUE DANS 'CAMPUS CRAWLER'\n{'='*50}")
         print(f"Bienvenue {self.player.name}.")
         print("Commandes utiles: go, talk, take, drop, use, status...")
         print(self.player.current_room.get_long_description())
 
 if __name__ == "__main__":
     Game().play()
+
 
