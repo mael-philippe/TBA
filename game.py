@@ -35,7 +35,7 @@ class Game:
         # Ajout de la commande USE
         self.commands["help"] = Command("help", " : afficher cette aide", Actions.help, 0)
         self.commands["quit"] = Command("quit", " : quitter le jeu", Actions.quit, 0)
-        self.commands["go"] = Command("go", " <direction> : se déplacer", Actions.go, 1)
+        self.commands["go"] = Command("go", " <direction> : se déplacer (N,E,S,O,U,D)", Actions.go, 1)
         self.commands["status"] = Command("status", " : afficher votre état", Actions.status, 0)
         self.commands["check"] = Command("check", " : inventaire", Actions.check, 0)
         self.commands["history"] = Command("history", " : historique", Actions.history, 0)
@@ -53,60 +53,95 @@ class Game:
         self._create_characters()
 
     def _create_rooms(self):
-        # (Tes salles restent identiques)
-        entree = Room("Porte d'entrée", "devant l'entrée principale.")
-        bar = Room("Bar", "dans le bar principal.")
-        salon = Room("Salon VIP", "dans un salon luxueux.")
-        cuisine = Room("Cuisine", "dans la cuisine.")
-        salle_jeux = Room("Salle de jeux", "dans la salle de jeux.")
-        jardin = Room("Jardin secret", "dans un jardin caché.")
-        bureau = Room("Bureau du Président", "dans le bureau du chef.")
-        cave = Room("Cave", "dans une cave sombre.")
+        # Création de toutes les salles
+        entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik.")
+        hall = Room("Hall principal", "dans le grand hall d'entrée. Des portraits anciens décorent les murs.")
+        cuisine = Room("Cuisine", "dans une cuisine équipée. Des odeurs de nourriture flottent dans l'air.")
+        cave = Room("Cave", "dans une cave sombre et humide. Des bouteilles de vin alignées sur des étagères.")
+        salle_sport = Room("Salle de sport", "dans une salle de sport bien équipée avec des poids et machines.")
+        sauna = Room("Sauna", "dans un sauna chaud et vaporeux. La chaleur est intense et relaxante.")
+        dortoir = Room("Dortoir", "dans le dortoir des membres. Des lits superposés et des affaires personnelles.")
+        bar = Room("Bar", "dans un bar bien approvisionné. Le comptoir brille sous la lumière tamisée.")
+        terrasse = Room("Terrasse", "sur une terrasse avec vue panoramique sur le campus. L'air est frais.")
+        bureau = Room("Bureau du Président", "dans le bureau luxueux du chef. Un grand bureau en acajou trône au centre.")
+        observatoire = Room("Observatoire", "dans un observatoire équipé d'un télescope professionnel.")
+        salle_jeux = Room("Salle de jeux", "dans une salle de jeux moderne avec consoles et jeux de société.")
         
-        entree.exits = {"N": bar}
-        bar.exits = {"S": entree, "E": salon, "O": cuisine, "N": salle_jeux}
-        salon.exits = {"O": bar, "N": bureau}
-        cuisine.exits = {"E": bar, "S": cave}
-        salle_jeux.exits = {"S": bar, "N": jardin}
-        jardin.exits = {"S": salle_jeux}
-        bureau.exits = {"S": salon}
-        cave.exits = {"N": cuisine}
+        # Configuration des sorties
+        # Porte d'entrée
+        entree.exits = {"N": hall}
         
-        self.rooms = [entree, bar, salon, cuisine, salle_jeux, jardin, bureau, cave]
+        # Hall principal
+        hall.exits = {"S": entree, "E": cuisine, "O": salle_sport, "N": dortoir}
+        
+        # Cuisine
+        cuisine.exits = {"O": hall, "D": cave, "N": bar}
+        
+        # Cave
+        cave.exits = {"U": cuisine}
+        
+        # Salle de sport
+        salle_sport.exits = {"E": hall, "D": sauna, "N": bureau}
+        
+        # Sauna
+        sauna.exits = {"U": salle_sport}
+        
+        # Dortoir
+        dortoir.exits = {"S": hall, "E": bar, "O": bureau, "U": salle_jeux}
+        
+        # Bar
+        bar.exits = {"O": dortoir, "U": terrasse, "S": cuisine}
+        
+        # Terrasse
+        terrasse.exits = {"D": bar, "O": salle_jeux}
+        
+        # Bureau du Président
+        bureau.exits = {"E": dortoir, "U": observatoire}
+        
+        # Observatoire
+        observatoire.exits = {"D": bureau, "E": salle_jeux}
+        
+        # Salle de jeux
+        salle_jeux.exits = {"D": dortoir, "O": observatoire, "E": terrasse}
+        
+        self.rooms = [
+            entree, hall, cuisine, cave, salle_sport, sauna,
+            dortoir, bar, terrasse, bureau, observatoire, salle_jeux
+        ]
         self.player = Player(input("\nEntrez votre nom: "))
         self.player.current_room = entree
 
     def _create_items(self):
         """Création des objets uniques (GPS, Chien)"""
         
-        # 1. Le GPS (1.5 kg) - On le place dans la Cave (Zone technique)
+        # 1. Le GPS (1.5 kg) - Dans l'observatoire (logique pour un traqueur)
         gps = Item("GPS", "un traqueur de PNJ haute technologie", 1.5)
-        self.rooms[7].add_item(gps) # Cave
+        self.rooms[10].add_item(gps) # Observatoire
         
-        # 2. Le Chien (2.7 kg) - On le place dans le Jardin
+        # 2. Le Chien (2.7 kg) - Dans le sauna (pourquoi pas, c'est amusant!)
         chien = Item("Chien", "un fidèle compagnon au flair infaillible", 2.7)
-        self.rooms[5].add_item(chien) # Jardin
+        self.rooms[5].add_item(chien) # Sauna
 
         # Note: Les pizzas et redbulls sont gérés par le spawner automatique
 
     def _create_characters(self):
-        garde = Character("Garde", "un colosse", self.rooms[0])
+        garde = Character("Garde", "un colosse intimidant", self.rooms[0])  # Porte d'entrée
         garde.interaction_behavior = events.guard_interaction
         self.characters.append(garde)
         
-        ivre = Character("Ivre", "un membre éméché", self.rooms[1])
+        ivre = Character("Ivre", "un membre éméché qui titube", self.rooms[7])  # Bar
         ivre.interaction_behavior = events.drunk_interaction
         self.characters.append(ivre)
         
-        champion = Character("Champion", "le geek ultime", self.rooms[4])
+        champion = Character("Champion", "le geek ultime aux réflexes éclairs", self.rooms[11])  # Salle de jeux
         champion.interaction_behavior = events.champion_interaction
         self.characters.append(champion)
         
-        coach = Character("Coach", "le coach de boxe", self.rooms[2])
+        coach = Character("Coach", "le coach de boxe musclé", self.rooms[4])  # Salle de sport
         coach.interaction_behavior = events.captain_interaction 
         self.characters.append(coach)
         
-        vieux = Character("Vieux", "l'ancien", self.rooms[5])
+        vieux = Character("Vieux", "l'ancien sage à la barbe blanche", self.rooms[10])  # Observatoire
         vieux.interaction_behavior = events.old_member_interaction
         vieux.movement_enabled = False
         self.characters.append(vieux)
@@ -228,6 +263,7 @@ class Game:
         print(f"\n{'='*50}\nBIENVENUE DANS 'INFILTRATION MYSTIK'\n{'='*50}")
         print(f"Bienvenue {self.player.name}.")
         print("Commandes utiles: go, talk, take, drop, use, status...")
+        print("Nouvelles directions: U (Up/monter) et D (Down/descendre)")
         print(self.player.current_room.get_long_description())
 
 if __name__ == "__main__":
