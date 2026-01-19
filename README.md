@@ -111,18 +111,18 @@ Conseils de Jeu
 
 Carte du jeu :
 
-                           [Observatoire]     [Terrasse]
-                                   |              |
-                                   D              D
-                           [Bureau]---[Dortoir]---[Bar]
-                                   |      |       |
-                                   |      U       U
-                                   |      |       |
-                         [Salle sport]--[Hall]--[Cuisine]
-                                   |      |       |
-                                   D      S       D
-                                   |      |       |
-                            [Sauna]   [Entrée] [Cave]
+                         [Observatoire]  [Salle de Jeux]  [Terrasse]
+                               |               |               |
+                               |               |               |
+                           [Bureau]---------[Dortoir]--------[Bar]
+                               |               |               |
+                               |               |               |
+                               |               |               |
+                         [Salle sport]-------[Hall]--------[Cuisine]
+                               |               |               |
+                               |               |               |
+                               |               |               |
+                            [Sauna]         [Entrée]        [Cave]
 
 Légende des étages :
 - Rez-de-chaussée : Entrée, Hall, Cuisine, Cave, Salle sport, Sauna
