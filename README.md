@@ -12,13 +12,11 @@ Collecter suffisamment de preuves (au moins 2) sur les Mystik tout en restant en
 Commandes Disponibles
 Déplacement et Navigation
 
-    go <direction> : se déplacer dans une direction cardinale (N, E, S, O)
+    go <direction> : se déplacer dans une direction cardinale (N, E, S, O, U=Up, D=Down)
 
     back : revenir à la salle précédente
 
     look : observer attentivement la salle actuelle
-
-    map : afficher la carte complète de la fraternité avec votre position (NOUVEAU)
 
 Gestion des Objets
 
@@ -34,7 +32,7 @@ Interactions Sociales
 
     talk <nom_personnage> : parler à un personnage présent dans la salle
 
-    Personnages disponibles : Garde, Ivre, Champion, Capitaine, Vieux
+    Personnages disponibles : Garde, Ivre, Champion, Coach, Vieux
 
 Information et Aide
 
@@ -46,14 +44,22 @@ Information et Aide
 
     quit : quitter le jeu
 
+Nouvelles Salles
+
+    Observatoire : Au-dessus du bureau du président, avec le Vieux
+
+    Terrasse : Au-dessus du bar, avec vue panoramique
+
+    Sauna : En-dessous de la salle de sport, endroit relaxant
+
 Mécaniques de Jeu
 Système d'Inventaire
 
-    Capacité : 20 kg maximum
+    Capacité : 5 kg maximum
 
     Poids des objets : Chaque objet a un poids différent
 
-    Affichage : check montre le poids actuel/20 kg
+    Affichage : check montre le poids actuel/5 kg
 
     Messages : Confirmations claires quand vous prenez/déposez des objets
 
@@ -71,37 +77,57 @@ Personnages Interactifs
 
 Chaque personnage propose des défis différents :
 
-    Garde (Porte d'entrée) : contrôle l'accès
+    Garde (Porte d'entrée) : contrôle l'accès à la fraternité
 
-    Ivre (Bar) : défis alcoolisés
+    Ivre (Bar) : défis alcoolisés dans le bar
 
-    Champion (Salle de jeux) : jeux vidéo
+    Champion (Salle de jeux) : jeux vidéo et quiz
 
-    Capitaine (Salle de sport) : combat de boxe
+    Coach (Salle de sport) : combat de boxe et réflexes
 
-    Vieux (Cave) : histoires et secrets
+    Vieux (Observatoire) : histoires et secrets dans l'observatoire
 
 Objets à Collecter
 
-    Preuves : Documents, Photos, Livre des secrets, Clé USB
+    Preuves : Documents, Clé USB, Réponses aux examens
 
-    Utilitaires : RedBull, Trousse de secours, Pizza
+    Utilitaires : GPS (trouve les PNJ), Chien (sent les objets)
 
-    Spéciaux : Beamer (téléportation), Bouteille de vin rare
+    Consommables : RedBull, Part de pizza
 
 Conseils de Jeu
+
+    Utilisez U (Up) et D (Down) pour naviguer entre les étages
 
     Parlez à tous les personnages pour découvrir des objets cachés
 
     Utilisez look dans chaque salle pour ne rien manquer
 
-    Surveillez votre poids avec check (limite 20 kg)
+    Surveillez votre poids avec check (limite 5 kg)
 
-    Collectez au moins 2 preuves pour gagner
+    Collectez au moins 4 objets spéciaux pour gagner
 
     Faites attention à votre santé avec status
 
-    Utilisez map régulièrement pour ne pas vous perdre dans la fraternité
+Carte du jeu :
+
+                           [Observatoire]     [Terrasse]
+                                   |              |
+                                   D              D
+                           [Bureau]---[Dortoir]---[Bar]
+                                   |      |       |
+                                   |      U       U
+                                   |      |       |
+                         [Salle sport]--[Hall]--[Cuisine]
+                                   |      |       |
+                                   D      S       D
+                                   |      |       |
+                            [Sauna]   [Entrée] [Cave]
+
+Légende des étages :
+- Rez-de-chaussée : Entrée, Hall, Cuisine, Cave, Salle sport, Sauna
+- Étage 1 : Dortoir, Bar, Bureau
+- Étage 2 : Salle de jeux, Terrasse, Observatoire
 
 Guide Développeur
 Architecture du Projet
@@ -118,306 +144,21 @@ TBA-main/
 ├── room.py             # Classe Room avec inventaire
 └── README.md           # Documentation
 
+Nouvelles Fonctionnalités
+
+1. Directions verticales :
+   - U (Up) : Monter d'un étage
+   - D (Down) : Descendre d'un étage
+
+2. Nouvelles salles :
+   - Observatoire : Salle thématique pour le Vieux
+   - Terrasse : Point de vue élevé
+   - Sauna : Zone de détente sous la salle de sport
+
+3. Réorganisation logique :
+   - PNJ placés dans des salles cohérentes avec leur rôle
+   - Objets spéciaux dans des lieux pertinents
+   - Architecture à 3 niveaux (rez-de-chaussée, étage 1, étage 2)
+
 Diagrammes de Classes
-<img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7a22" /><img width="1755" height="844" alt="Diagramme de Classe Command" src="https://github.com/user-attachments/assets/70279d1d-614e-4071-879a-1447cdc63d9a" /><img width="1735" height="924" alt="Diagramme de Classe Actions" src="https://github.com/user-attachments/assets/96c05ce0-90f0-4d57-8823-b194d08ff618" />
-Système d'Inventaire - Conception
-1. Classe Item (item.py)
-python
-
-class Item:
-    def __init__(self, name, description, weight):
-        self.name = name          # Nom de l'objet
-        self.description = description  # Description
-        self.weight = weight      # Poids en kg
-    
-    def __str__(self):
-        return f"{self.name} : {self.description} ({self.weight} kg)"
-
-2. Inventaire du Joueur (player.py)
-
-Structure de données choisie : Liste
-
-    self.inventory = [] : Liste d'objets Item
-
-    self.max_weight = 20.0 : Limite de poids
-
-    self.current_weight : Calcul dynamique
-
-Fonctions clés :
-
-    add_item(item) : Ajoute avec vérification de poids
-
-    remove_item(item_name) : Retire (insensible à la casse)
-
-    get_current_weight() : Calcule le poids total
-
-    can_take_item(item) : Vérifie la capacité
-
-    get_inventory_string() : Formatage d'affichage
-
-3. Inventaire des Salles (room.py)
-
-Même structure pour cohérence :
-
-    self.inventory = [] : Liste d'objets Item
-
-    Méthodes similaires à Player pour l'interface
-
-Gestion des Commandes
-Validation des Paramètres
-python
-
-def take(game, list_of_words, number_of_parameters):
-    l = len(list_of_words)
-    if l < 2:  # Vérifie qu'il y a au moins commande + paramètre
-        print(f"La commande '{list_of_words[0]}' prend 1 paramètre.")
-        return False
-
-Gestion des Noms Composés
-python
-
-# "take Clé USB spéciale" → ["take", "Clé", "USB", "spéciale"]
-item_name_parts = list_of_words[1:]  # ["Clé", "USB", "spéciale"]
-item_name = " ".join(item_name_parts)  # "Clé USB spéciale"
-
-Recherche Insensible à la Casse
-python
-
-def remove_item(self, item_name):
-    item_name_lower = item_name.lower()  # "clé usb"
-    for item in self.inventory:
-        if item.name.lower() == item_name_lower:  # Compare en minuscules
-            return self.inventory.pop(i)
-
-Nouvelle Fonctionnalité : Commande Map
-python
-
-def map(game, list_of_words, number_of_parameters):
-    """
-    Afficher la carte de la fraternité.
-    """
-    l = len(list_of_words)
-    if l != number_of_parameters + 1:
-        command_word = list_of_words[0]
-        print(MSG0.format(command_word=command_word))
-        return False
-    
-    game.show_map()
-    return True
-
-La commande map affiche :
-
-1. Une carte ASCII de la fraternité avec les connexions entre salles
-2. Votre position actuelle marquée par [X]
-3. Les premières lettres des autres salles
-4. La légende des symboles utilisés
-5. Les connexions détaillées depuis votre salle actuelle
-
-Flux de Données
-text
-
-┌─────────┐    take    ┌─────────┐
-│  Salle  │───────────▶│ Joueur  │
-│inventory│◀───────────│inventory│
-└─────────┘    drop    └─────────┘
-     │                       │
-     │ add_item()            │ get_inventory_string()
-     │ remove_item()         │ check command
-     ▼                       ▼
-┌─────────────────┐   ┌──────────────────┐
-│ Room.get_item() │   │ Player.check()   │
-└─────────────────┘   └──────────────────┘
-
-Caractéristiques Techniques
-1. Séparation des responsabilités
-
-    Item : Définition des objets
-
-    Player : Gestion de l'inventaire personnel
-
-    Room : Gestion des objets dans l'environnement
-
-    Actions : Implémentation des commandes
-
-2. Validation robuste
-
-    Vérification du poids maximum
-
-    Messages d'erreur explicites
-
-    Gestion des cas limites (objet non trouvé, inventaire plein)
-
-3. Interface utilisateur avancée
-
-    Noms composés acceptés (take Clé USB)
-
-    Insensibilité à la casse (take clé usb, take CLÉ USB)
-
-    Messages de confirmation avec emojis
-
-    Affichage formaté du poids
-
-    Carte ASCII interactive avec positionnement
-
-4. Extensibilité
-
-    Ajout facile de nouveaux objets
-
-    Structure prête pour objets spéciaux (clés, potions, etc.)
-
-    Séparation claire entre données et logique
-
-Exemple d'Exécution
-text
-
-> look
-Vous êtes dans la salle de jeux...
-Objets dans la salle:
-    1. Clé USB : clé USB avec des données sensibles (0.1 kg)
-
-> take Clé USB
-🎒 Vous avez pris 'Clé USB'.
-
-> check
-🎒 Inventaire (0.1/20 kg):
-    1. Clé USB : clé USB avec des données sensibles (0.1 kg)
-
-> drop clé usb  
-📦 Vous avez déposé 'Clé USB'.
-
-> map
-
-============================================================
-CARTE DE LA FRATERNITÉ MYSTIK - Vous êtes dans: Salle de jeux
-============================================================
-
-                                [T]                                              
-                                 |                                                 
-                                 |                                            
-                   [D]----------[X]--------------------[B]                   
-                    |            |                      |                           
-                    |            |               -      | 
-                   [S]----------[A]--------------------[C]
-                    |            |
-                    |            | 
-                   [V]          [P]
-
-Légende:
-  [X] = Vous êtes ici
-  [L] = Première lettre du nom de la salle
-  |    = Passage vertical
-  --   = Passage horizontal
-
-Connexions depuis Salle de jeux:
-  Nord → Toit
-  Est → Bureau du président
-  Sud → Bar
-  Ouest → Dortoir
-
-Fonctionnalités Implémentées
-
-- Système d'objets complet avec poids et descriptions
-- Double inventaire (joueur + salles) avec transfert
-- Limite de poids (20 kg maximum)
-- Commandes avancées avec noms composés
-- Recherche insensible à la casse
-- Messages d'erreur et de confirmation
-- Historique des déplacements
-- Système de santé avec soins et dégâts
-- Personnages interactifs avec dialogues
-- Sauvegarde automatique de l'historique
-- Carte ASCII interactive avec positionnement
-
-Perspectives d'Amélioration
-
-    Objets spéciaux :
-
-        Beamer (téléportation)
-
-        Clés pour portes verrouillées
-
-        Potions de soin instantané
-
-        Cartes pour navigation
-
-    Améliorations techniques :
-
-        Système de sauvegarde/chargement
-
-        Interface graphique simple
-
-        Effets sonores
-
-        Journal de quêtes
-
-    Contenu additionnel :
-
-        Plus de salles et d'étages
-
-        Dialogues branches avec conséquences
-
-        Quêtes secondaires
-
-        Système de réputation
-
-    Gameplay avancé :
-
-        Combats tour par tour
-
-        Compétences et sorts
-
-        Crafting d'objets
-
-        Événements aléatoires
-
-Notes de Conception
-Choix de la liste pour l'inventaire
-
-    Avantages : Conservation de l'ordre d'acquisition, parcours simple
-
-    Alternative envisagée : Dictionnaire pour accès rapide par nom
-
-    Décision : Liste pour simplicité et cohérence avec l'affichage numéroté
-
-Gestion du poids
-
-    Calcul dynamique à chaque ajout/suppression
-
-    Vérification avant transfert pour éviter les états invalides
-
-    Affichage clair du poids restant
-
-Messages utilisateur
-
-    Emojis pour améliorer l'expérience visuelle
-
-    Messages différents pour succès/échec
-
-    Formatage cohérent pour toutes les commandes
-
-Carte du jeu :
-                               [TOIT]                                              N
-                                 |                                                 ↑                                
-                                 |                                            O ←  0  → E                                                            
-                [DORTOIR]--[SALLE DE JEUX]--[BUREAU DU PRÉSIDENT]                  ↓
-                    |            |                     |                           S
-                    |            |                     | 
-            [SALLE DE SPORT]---[BAR]---------------[CUISINE]
-                    |            |
-                    |            | 
-                [CAVE]     [PORTE D'ENTRÉE]
-
-Mise à Jour : Nouvelle Commande Map
-
-La commande `map` a été ajoutée pour améliorer la navigation dans le jeu. Elle affiche :
-
-1. **Carte ASCII** : Représentation visuelle de la fraternité
-2. **Position du joueur** : Marquée par [X] sur la carte
-3. **Légende** : Explication des symboles utilisés
-4. **Connexions** : Liste des sorties disponibles depuis la salle actuelle
-
-Cette fonctionnalité aide les joueurs à :
-- Se repérer dans l'environnement complexe
-- Planifier leurs déplacements
-- Comprendre la structure de la fraternité
-- Ne pas se perdre lors de l'exploration
+<img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7
