@@ -263,8 +263,8 @@ class Game:
         print(f"\n{'='*50}\nBIENVENUE DANS 'INFILTRATION MYSTIK'\n{'='*50}")
         print(f"Bienvenue {self.player.name}.")
         print("Commandes utiles: go, talk, take, drop, use, status...")
-        print("Nouvelles directions: U (Up/monter) et D (Down/descendre)")
         print(self.player.current_room.get_long_description())
 
 if __name__ == "__main__":
     Game().play()
+
