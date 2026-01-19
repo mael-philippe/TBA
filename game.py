@@ -1,235 +1,234 @@
+import traceback
+import random
 from room import Room
 from player import Player
 from command import Command
 from actions import Actions
-from events import *
 from character import Character
 from item import Item
-from quest import Quest, QuestManager  # Import ajouté
+import events
 
 class Game:
+    DEBUG = True 
+    
     def __init__(self):
         self.finished = False
         self.rooms = []
         self.commands = {}
         self.player = None
-        self.quest_manager = QuestManager()  # Ajout du gestionnaire de quêtes
+        self.characters = []
+        self.required_items = ["Clé USB", "Documents", "Livre des secrets"]
+        
+        # Gestion du temps
+        self.turn_count = 0
+        self.consecutive_look_count = 0
+        
+        # Gestion du spawn (objets aléatoires)
+        self.spawn_timer = 0
+        self.next_spawn_turn = random.randint(1, 5)
+        self.spawnable_items = {
+            "RedBull": {"max": 3, "desc": "boisson énergisante", "weight": 0.3},
+            "Part de pizza": {"max": 2, "desc": "reste de la veille", "weight": 0.2}
+        }
     
     def setup(self):
-        help = Command("help", " : afficher cette aide", Actions.help, 0)
-        self.commands["help"] = help
-        quit = Command("quit", " : quitter le jeu", Actions.quit, 0)
-        self.commands["quit"] = quit
-        go = Command("go", " <direction> : se déplacer dans une direction cardinale (N, E, S, O)", Actions.go, 1)
-        self.commands["go"] = go
-        status = Command("status", " : afficher votre état", Actions.status, 0)
-        self.commands["status"] = status
-        check = Command("check", " : vérifier votre inventaire", Actions.check, 0)
-        self.commands["check"] = check
-        history = Command("history", " : afficher l'historique des salles visitées", Actions.history, 0)
-        self.commands["history"] = history
-        back = Command("back", " : revenir à la salle précédente", Actions.back, 0)
-        self.commands["back"] = back
-        talk = Command("talk", " <nom_personnage> : parler à un personnage", Actions.talk, 1)
-        self.commands["talk"] = talk
-        look = Command("look", " : regarder autour de vous", Actions.look, 0)
-        self.commands["look"] = look
-        take = Command("take", " <nom_objet> : prendre un objet", Actions.take, 1)
-        self.commands["take"] = take
-        drop = Command("drop", " <nom_objet> : déposer un objet", Actions.drop, 1)
-        self.commands["drop"] = drop
+        # Ajout de la commande USE
+        self.commands["help"] = Command("help", " : afficher cette aide", Actions.help, 0)
+        self.commands["quit"] = Command("quit", " : quitter le jeu", Actions.quit, 0)
+        self.commands["go"] = Command("go", " <direction> : se déplacer", Actions.go, 1)
+        self.commands["status"] = Command("status", " : afficher votre état", Actions.status, 0)
+        self.commands["check"] = Command("check", " : inventaire", Actions.check, 0)
+        self.commands["history"] = Command("history", " : historique", Actions.history, 0)
+        self.commands["back"] = Command("back", " : retour arrière", Actions.back, 0)
+        self.commands["talk"] = Command("talk", " <nom> : parler", Actions.talk, 1)
+        self.commands["look"] = Command("look", " : observer", Actions.look, 0)
+        self.commands["take"] = Command("take", " <objet> : prendre", Actions.take, 1)
+        self.commands["drop"] = Command("drop", " <objet> : déposer", Actions.drop, 1)
         
-        # Commandes pour les quêtes (ajoutées)
-        quests = Command("quests", " : lister toutes les quêtes", Actions.quests, 0)
-        self.commands["quests"] = quests
-        quest = Command("quest", " <nom_quête> : afficher les détails d'une quête", Actions.quest, 1)
-        self.commands["quest"] = quest
-        activate = Command("activate", " <nom_quête> : activer une quête", Actions.activate, 1)
-        self.commands["activate"] = activate
-        rewards = Command("rewards", " : afficher les récompenses gagnées", Actions.rewards, 0)
-        self.commands["rewards"] = rewards
+        # NOUVELLE COMMANDE
+        self.commands["use"] = Command("use", " <objet> : utiliser un objet spécial", Actions.use, 1)
+        
+        self._create_rooms()
+        self._create_items() # On place les objets uniques ici
+        self._create_characters()
 
-        # Création des objets
-        documents = Item("Documents", "documents compromettants sur les Mystik", 0.5)
-        photo = Item("Photo", "photo compromettante du président", 0.2)
-        livre_secrets = Item("Livre", "livre des secrets des Mystik", 1.0)
-        cle_usb = Item("Clé USB", "clé USB avec des données sensibles", 0.1)
-        redbull = Item("RedBull", "boisson énergisante", 0.3)
-        trousse_secours = Item("Trousse", "trousse de premiers secours", 0.8)
-        bouteille_vin = Item("Bouteille", "bouteille de vin rare", 1.5)
-        pizza = Item("Pizza", "pizza à moitié mangée", 0.7)
-        beamer = Item("Beamer", "appareil de téléportation magique", 2.0)
-
-        # 9 salles
-        porte_entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik. La musique tonne de l'intérieur.")
-        self.rooms.append(porte_entree)
-        bar = Room("Bar", "dans le bar principal. Des bouteilles vides traînent partout.")
-        self.rooms.append(bar)
-        cuisine = Room("Cuisine", "dans la cuisine dégoûtante. De la nourriture pourrie traîne partout.")
-        self.rooms.append(cuisine)
-        salle_jeux = Room("Salle de jeux", "dans la salle de jeux. Des consoles et écrans géants remplissent la pièce.")
-        self.rooms.append(salle_jeux)
-        bureau_president = Room("Bureau du président", "dans le bureau luxueux du président. Des trophées et diplômes ornent les murs.")
-        self.rooms.append(bureau_president)
-        dortoir = Room("Dortoir", "dans le dortoir commun. Des vêtements sales traînent sur le sol.")
-        self.rooms.append(dortoir)
-        salle_sport = Room("Salle de sport", "dans la salle de sport privée. Des équipements dernier cri sont alignés.")
-        self.rooms.append(salle_sport)
-        cave = Room("Cave", "dans la cave sombre et humide. Des rangées de bouteilles de vin s'alignent.")
-        self.rooms.append(cave)
-        toit = Room("Toit", "sur le toit de la fraternité. La vue sur le campus est magnifique.")
-        self.rooms.append(toit)
-
-        # Ajouter des objets aux salles
-        porte_entree.add_item(redbull)
-        bar.add_item(bouteille_vin)
-        cuisine.add_item(pizza)
-        salle_jeux.add_item(cle_usb)
-        bureau_president.add_item(documents)
-        bureau_president.add_item(photo)
-        dortoir.add_item(trousse_secours)
-        cave.add_item(beamer)
-        toit.add_item(livre_secrets)
-
-        # Configuration des sorties
-        porte_entree.exits = {"N": bar, "E": None, "S": None, "O": None}
-        bar.exits = {"N": salle_jeux, "E": cuisine, "S": porte_entree, "O": salle_sport}
-        cuisine.exits = {"N": bureau_president, "E": None, "S": None, "O": bar}
-        salle_jeux.exits = {"N": toit, "E": bureau_president, "S": bar, "O": dortoir}
-        bureau_president.exits = {"N": None, "E": None, "S": cuisine, "O": salle_jeux}
-        dortoir.exits = {"N": None, "E": salle_jeux, "S": salle_sport, "O": None}
-        salle_sport.exits = {"N": dortoir, "E": bar, "S": cave, "O": None}
-        cave.exits = {"N": salle_sport, "E": None, "S": None, "O": None}
-        toit.exits = {"N": None, "E": None, "S": salle_jeux, "O": None}
-
-        # Ajout des personnages
-        garde = Character("Garde", "un membre de Mystik qui surveille l'entrée", porte_entree_event)
-        porte_entree.add_character(garde)
-        membre_ivre = Character("Ivre", "un membre de Mystik visiblement éméché", bar_event)
-        bar.add_character(membre_ivre)
-        champion = Character("Champion", "le champion de jeux vidéo de Mystik", salle_jeux_event)
-        salle_jeux.add_character(champion)
-        capitaine = Character("Capitaine", "le capitaine de l'équipe de boxe", salle_sport_event)
-        salle_sport.add_character(capitaine)
-        vieux_membre = Character("Vieux", "un ancien membre qui raconte des histoires", cave_event)
-        cave.add_character(vieux_membre)
-
-        # Configuration du joueur
+    def _create_rooms(self):
+        # (Tes salles restent identiques)
+        entree = Room("Porte d'entrée", "devant l'entrée principale.")
+        bar = Room("Bar", "dans le bar principal.")
+        salon = Room("Salon VIP", "dans un salon luxueux.")
+        cuisine = Room("Cuisine", "dans la cuisine.")
+        salle_jeux = Room("Salle de jeux", "dans la salle de jeux.")
+        jardin = Room("Jardin secret", "dans un jardin caché.")
+        bureau = Room("Bureau du Président", "dans le bureau du chef.")
+        cave = Room("Cave", "dans une cave sombre.")
+        
+        entree.exits = {"N": bar}
+        bar.exits = {"S": entree, "E": salon, "O": cuisine, "N": salle_jeux}
+        salon.exits = {"O": bar, "N": bureau}
+        cuisine.exits = {"E": bar, "S": cave}
+        salle_jeux.exits = {"S": bar, "N": jardin}
+        jardin.exits = {"S": salle_jeux}
+        bureau.exits = {"S": salon}
+        cave.exits = {"N": cuisine}
+        
+        self.rooms = [entree, bar, salon, cuisine, salle_jeux, jardin, bureau, cave]
         self.player = Player(input("\nEntrez votre nom: "))
-        self.player.current_room = porte_entree
-        self.player.history.append(porte_entree)
+        self.player.current_room = entree
 
-        # Configuration des quêtes
-        self.setup_quests()
-    
-    def setup_quests(self):
-        """Configure les quêtes du jeu."""
+    def _create_items(self):
+        """Création des objets uniques (GPS, Chien)"""
         
-        # Quête 1: Récupérer un objet spécifique
-        quest1 = Quest(
-            "Infiltration initiatique",
-            "Récupérez la clé USB dans la salle de jeux"
-        )
-        quest1.add_objective('item', 'Clé USB', 'Trouver la clé USB dans la salle de jeux')
-        quest1.add_reward('health', 30, "Confiance accrue: +30 santé")
-        self.quest_manager.add_quest(quest1)
+        # 1. Le GPS (1.5 kg) - On le place dans la Cave (Zone technique)
+        gps = Item("GPS", "un traqueur de PNJ haute technologie", 1.5)
+        self.rooms[7].add_item(gps) # Cave
         
-        # Quête 2: Atteindre une pièce spécifique
-        quest2 = Quest(
-            "Exploration secrète",
-            "Atteignez le toit de la fraternité"
-        )
-        quest2.add_objective('room', 'Toit', 'Accéder au toit de la fraternité')
-        quest2.add_reward('health', 20, "Vue imprenable: +20 santé")
-        self.quest_manager.add_quest(quest2)
+        # 2. Le Chien (2.7 kg) - On le place dans le Jardin
+        chien = Item("Chien", "un fidèle compagnon au flair infaillible", 2.7)
+        self.rooms[5].add_item(chien) # Jardin
+
+        # Note: Les pizzas et redbulls sont gérés par le spawner automatique
+
+    def _create_characters(self):
+        garde = Character("Garde", "un colosse", self.rooms[0])
+        garde.interaction_behavior = events.guard_interaction
+        self.characters.append(garde)
         
-        # Quête 3: Interagir avec un PNJ spécifique
-        quest3 = Quest(
-            "Négociation dangereuse",
-            "Parlez au vieux membre dans la cave"
-        )
-        quest3.add_objective('talk', 'Vieux', 'Discuter avec le vieux membre dans la cave')
-        quest3.add_reward('health', 25, "Sagesse acquise: +25 santé")
-        self.quest_manager.add_quest(quest3)
+        ivre = Character("Ivre", "un membre éméché", self.rooms[1])
+        ivre.interaction_behavior = events.drunk_interaction
+        self.characters.append(ivre)
         
-        # Activer la première quête au début du jeu
-        self.quest_manager.activate_quest("Infiltration initiatique")
-    
+        champion = Character("Champion", "le geek ultime", self.rooms[4])
+        champion.interaction_behavior = events.champion_interaction
+        self.characters.append(champion)
+        
+        coach = Character("Coach", "le coach de boxe", self.rooms[2])
+        coach.interaction_behavior = events.captain_interaction 
+        self.characters.append(coach)
+        
+        vieux = Character("Vieux", "l'ancien", self.rooms[5])
+        vieux.interaction_behavior = events.old_member_interaction
+        vieux.movement_enabled = False
+        self.characters.append(vieux)
+
+    def _handle_item_spawning(self):
+        """Gère l'apparition aléatoire d'objets de décor"""
+        self.spawn_timer += 1
+        if self.spawn_timer >= self.next_spawn_turn:
+            self._spawn_random_item()
+            self.spawn_timer = 0
+            self.next_spawn_turn = random.randint(1, 5)
+
+    def _spawn_random_item(self):
+        item_name = random.choice(list(self.spawnable_items.keys()))
+        config = self.spawnable_items[item_name]
+        
+        current_count = 0
+        for item in self.player.inventory:
+            if item.name == item_name: current_count += 1
+        for room in self.rooms:
+            for item in room.inventory:
+                if item.name == item_name: current_count += 1
+        
+        if current_count < config['max']:
+            random_room = random.choice(self.rooms)
+            new_item = Item(item_name, config['desc'], config['weight'])
+            random_room.add_item(new_item)
+            if self.DEBUG:
+                print(f"\n[INFO MONDE] Un {item_name} est apparu dans : {random_room.name} !")
+
     def win(self):
-        """Vérifie si le joueur a gagné (toutes les quêtes complétées)."""
-        return len(self.quest_manager.completed_quests) >= 3
-    
-    def loose(self):
-        """Vérifie si le joueur a perdu."""
-        if (self.player.current_room.name == "Bureau du président" and 
-            not any(item.name == "Clé USB" for item in self.player.inventory)):
-            print("\n🚨 ALERTE! Vous avez été découvert!")
-            print("Le président vous a surpris sans autorisation!")
+        required_trophies = ["Manette dorée", "Bouteille de vin", "Clé USB", "Documents", "Réponses aux examens"]
+        trophies_count = sum(1 for item in self.player.inventory if item.name in required_trophies)
+        if trophies_count >= 4:
+            print("\n🏆 VICTOIRE ABSOLUE ! 🏆")
+            print("Vous avez vaincu la fraternité Mystik !")
             return True
-        
-        if self.player.health <= 0:
-            return True
-            
         return False
     
+    def loose(self):
+        if self.player.health <= 0:
+            print("\n💀 Vous êtes K.O.")
+            return True
+        if self.player.current_room.name == "Bureau du Président":
+            boss_items = sum(1 for item in self.player.inventory if item.weight in [0.5, 1.2, 0.1])
+            if boss_items < 2:
+                print("\n⛔ Le Président vous vire du bureau !")
+                return True
+        return False
+
     def play(self):
         self.setup()
         self.print_welcome()
+        
         while not self.finished:
-            if self.player.health <= 0:
-                print("💀 GAME OVER - Mission échouée!")
+            try:
+                command = input(f"\n{self.player.current_room.name} > ")
+                should_move = self.process_command(command)
+                
+                if should_move:
+                    self.update_game_state()
+                
+                if self.win() or self.loose():
+                    self.finished = True
+                    
+            except KeyboardInterrupt:
                 self.finished = True
-                break
-            
-            if self.win():
-                print("\n🎉 FÉLICITATIONS! Mission accomplie!")
-                print("Vous avez infiltré la fraternité Mystik avec succès!")
-                print("Toutes les quêtes sont complétées!")
-                self.finished = True
-                break
-            
-            if self.loose():
-                self.finished = True
-                break
-            
-            self.process_command(input("> "))
-        return None
+            except Exception as e:
+                print(f"Erreur: {e}")
+                if self.DEBUG: traceback.print_exc()
+        
+        print("\nFin du jeu.")
 
-    def process_command(self, command_string) -> None:
-        if not command_string.strip():
-            return
+    def update_game_state(self):
+        for character in self.characters:
+            character.move()
+        self._handle_item_spawning()
+
+    def process_command(self, command_string):
+        if not command_string.strip(): return False
         
         list_of_words = command_string.split(" ")
         command_word = list_of_words[0]
-
-        if command_word not in self.commands.keys():
-            print(f"\nCommande '{command_word}' non reconnue. Entrez 'help' pour voir la liste des commandes disponibles.\n")
-        else:
+        
+        if command_word in self.commands:
             command = self.commands[command_word]
-            if command_word == "go" and len(list_of_words) > 1:
-                direction = list_of_words[1].upper()
-                if direction not in ["N", "E", "S", "O"]:
-                    print(f"\nDirection '{direction}' non valide. Les directions possibles sont: N (Nord), E (Est), S (Sud), O (Ouest).\n")
-                    return
             
-            command.action(self, list_of_words, command.number_of_parameters)
+            # Gestion LOOK (temps)
+            if command_word == "look":
+                command.action(self, list_of_words, command.number_of_parameters)
+                self.consecutive_look_count += 1
+                if self.consecutive_look_count >= 3:
+                    print("\n(Le temps passe...)")
+                    self.consecutive_look_count = 0
+                    return True
+                return False
+
+            self.consecutive_look_count = 0
+            
+            result = command.action(self, list_of_words, command.number_of_parameters)
+            
+            # Actions qui font passer le temps
+            action_takes_time = (command_word == "go" and result) or \
+                                (command_word == "talk") or \
+                                (command_word == "use") # Utiliser un objet prend du temps aussi !
+            
+            if action_takes_time:
+                self.turn_count += 1
+                if self.turn_count <= 3: return False
+                elif self.turn_count % 2 == 0: return True
+                else: return True # Le temps passe pour le spawn, même si PNJ bougent pas
+            
+            return False
+        else:
+            print(f"\nCommande '{command_word}' inconnue.")
+            return False
 
     def print_welcome(self):
-        print(f"\nBienvenue {self.player.name} dans 'Infiltration Mystik'!")
-        print("Votre mission: Infiltrer la fraternité Mystik et collecter des preuves compromettantes.")
-        print("Utilisez 'help' pour voir les commandes disponibles.")
-        print("Santé: 100/100")
-        print("Capacité d'inventaire: 20 kg")
+        print(f"\n{'='*50}\nBIENVENUE DANS 'INFILTRATION MYSTIK'\n{'='*50}")
+        print(f"Bienvenue {self.player.name}.")
+        print("Commandes utiles: go, talk, take, drop, use, status...")
         print(self.player.current_room.get_long_description())
-        print(self.quest_manager.get_active_quests_string())
-
-
-def main():
-    try:
-        Game().play()
-    except Exception as e:
-        pass
-    
 
 if __name__ == "__main__":
-    main()
+    Game().play()

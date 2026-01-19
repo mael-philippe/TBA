@@ -5,6 +5,7 @@ MSG1 = "\nLa commande '{command_word}' prend 1 seul paramètre.\n"
 
 class Actions:
 
+    @staticmethod
     def go(game, list_of_words, number_of_parameters):
         """
         Move the player in the direction specified by the parameter.
@@ -19,17 +20,16 @@ class Actions:
             return False
         
         direction = list_of_words[1].upper()
-        if direction not in ["N", "E", "S", "O"]:
-            print(f"\nDirection '{direction}' non valide. Les directions possibles sont: N (Nord), E (Est), S (Sud), O (Ouest).\n")
+        if direction not in ["N", "E", "S", "O", "U", "D"]:
+            print(f"\nDirection '{direction}' non valide. Les directions possibles sont: N, E, S, O, U (Up), D (Down).\n")
             return False
         
         success = player.move(direction)
         if success:
-            # Vérifier les quêtes de type 'room'
-            game.quest_manager.check_quest_triggers(player, 'enter', player.current_room.name)
             print(player.get_history())
         return success
 
+    @staticmethod
     def quit(game, list_of_words, number_of_parameters):
         """
         Quit the game.
@@ -46,6 +46,7 @@ class Actions:
         game.finished = True
         return True
 
+    @staticmethod
     def help(game, list_of_words, number_of_parameters):
         """
         Print the list of available commands.
@@ -62,6 +63,7 @@ class Actions:
         print()
         return True
 
+    @staticmethod
     def status(game, list_of_words, number_of_parameters):
         """Afficher l'état du joueur"""
         l = len(list_of_words)
@@ -80,6 +82,7 @@ class Actions:
         print()
         return True
 
+    @staticmethod
     def check(game, list_of_words, number_of_parameters):
         """Vérifier l'inventaire du joueur"""
         l = len(list_of_words)
@@ -92,6 +95,7 @@ class Actions:
         print(player.get_inventory_string())
         return True
 
+    @staticmethod
     def history(game, list_of_words, number_of_parameters):
         """
         Afficher l'historique des salles visitées.
@@ -106,6 +110,7 @@ class Actions:
         print(player.get_history())
         return True
 
+    @staticmethod
     def back(game, list_of_words, number_of_parameters):
         """
         Revenir à la salle précédente.
@@ -122,10 +127,10 @@ class Actions:
             print(player.get_history())
         return success
 
+    @staticmethod
     def talk(game, list_of_words, number_of_parameters):
         """
         Parler à un personnage.
-        Gère les noms composés.
         """
         player = game.player
         l = len(list_of_words)
@@ -140,18 +145,14 @@ class Actions:
         
         current_room = player.current_room
         
-        success = current_room.interact_with_character(character_name, player)
-        if success:
-            # Vérifier les quêtes de type 'talk'
-            game.quest_manager.check_quest_triggers(player, 'talk', character_name)
+        character = current_room.get_character(character_name)
+        if character:
+            return character.interact(player, game)
         else:
             print(f"\nIl n'y a personne nommé '{character_name}' ici.\n")
-            print("Personnes présentes:")
-            for character in current_room.characters:
-                print(f"  - {character.name}")
-            print()
-        return success
+            return False
 
+    @staticmethod
     def look(game, list_of_words, number_of_parameters):
         """
         Regarder autour de soi (affiche les objets et personnages).
@@ -170,12 +171,18 @@ class Actions:
         
         print(current_room.get_inventory_string())
         
+        if current_room.characters:
+            print("\nPersonnes présentes:")
+            for character in current_room.characters:
+                print(f"  - {character.name}: {character.description}")
+        
+        print()
         return True
 
+    @staticmethod
     def take(game, list_of_words, number_of_parameters):
         """
         Prendre un objet dans la salle.
-        Gère les noms composés comme "Clé USB".
         """
         player = game.player
         l = len(list_of_words)
@@ -193,8 +200,6 @@ class Actions:
         item = current_room.remove_item(item_name)
         if item:
             if player.add_item(item):
-                # Vérifier les quêtes de type 'item'
-                game.quest_manager.check_quest_triggers(player, 'take', item.name)
                 return True
             else:
                 current_room.add_item(item)
@@ -203,10 +208,10 @@ class Actions:
             print(f"\n❌ L'objet '{item_name}' n'est pas dans cette salle.\n")
             return False
 
+    @staticmethod
     def drop(game, list_of_words, number_of_parameters):
         """
         Déposer un objet de l'inventaire dans la salle.
-        Gère les noms composés comme "Clé USB".
         """
         player = game.player
         l = len(list_of_words)
@@ -227,100 +232,70 @@ class Actions:
             return True
         else:
             return False
-    
-    def quests(game, list_of_words, number_of_parameters):
-        """Lister toutes les quêtes disponibles."""
-        l = len(list_of_words)
-        if l != number_of_parameters + 1:
-            command_word = list_of_words[0]
-            print(MSG0.format(command_word=command_word))
-            return False
         
-        print(game.quest_manager.get_active_quests_string())
-        print(game.quest_manager.get_completed_quests_string())
-        return True
-    
-    def quest(game, list_of_words, number_of_parameters):
-        """Afficher les détails d'une quête spécifique."""
+    @staticmethod
+    def use(game, list_of_words, number_of_parameters):
+        """
+        Utiliser un objet de l'inventaire (ex: use GPS, use Chien).
+        """
         player = game.player
         l = len(list_of_words)
         
         if l < 2:
-            command_word = list_of_words[0]
-            print(MSG1.format(command_word=command_word))
+            print("\nQue voulez-vous utiliser ? (ex: use GPS)")
             return False
         
-        quest_name = " ".join(list_of_words[1:])
+        # Reconstruire le nom de l'objet (ex: "Clé USB")
+        item_name = " ".join(list_of_words[1:]).lower()
         
-        for quest in game.quest_manager.quests:
-            if quest.name.lower() == quest_name.lower():
-                print(f"\n=== {quest.name} ===")
-                print(f"Description: {quest.description}")
-                print(f"Statut: {'Active' if quest.is_active else 'Inactive'}")
-                print(f"Complétée: {'Oui' if quest.is_completed else 'Non'}")
-                print(f"Progression: {quest.get_progress()}")
-                
-                if quest.objectives:
-                    print("\nObjectifs:")
-                    for obj in quest.objectives:
-                        status = "✓" if obj['completed'] else "○"
-                        print(f"  {status} {obj['description']}")
-                
-                if quest.rewards:
-                    print("\nRécompenses:")
-                    for reward in quest.rewards:
-                        print(f"  • {reward['description']}")
-                
-                print()
-                return True
+        # 1. Vérifier si l'objet est dans l'inventaire
+        item_to_use = None
+        for item in player.inventory:
+            if item.name.lower() == item_name:
+                item_to_use = item
+                break
         
-        print(f"\n❌ Quête '{quest_name}' non trouvée.\n")
-        return False
-    
-    def activate(game, list_of_words, number_of_parameters):
-        """Activer une quête spécifique."""
-        player = game.player
-        l = len(list_of_words)
-        
-        if l < 2:
-            command_word = list_of_words[0]
-            print(MSG1.format(command_word=command_word))
+        if not item_to_use:
+            print(f"\n🚫 Vous n'avez pas '{list_of_words[1]}' dans votre inventaire.")
             return False
-        
-        quest_name = " ".join(list_of_words[1:])
-        
-        if game.quest_manager.activate_quest(quest_name):
-            print(f"\n✅ Quête '{quest_name}' activée!\n")
-            for quest in game.quest_manager.active_quests:
-                if quest.name.lower() == quest_name.lower():
-                    print(str(quest))
+
+        # --- EFFET DU GPS ---
+        if item_to_use.name == "GPS":
+            print("\n📡 --- ACTIVATION DU GPS MYSTIK --- 📡")
+            print("Scan des signaux en cours...")
+            found = False
+            for char in game.characters:
+                # On n'affiche pas les PNJ qui sont dans la même salle (on les voit déjà)
+                if char.current_room != player.current_room:
+                    print(f"  📍 {char.name} se trouve : {char.current_room.name}")
+                    found = True
+            
+            if not found:
+                print("  (Aucun signal distant détecté. Tout le monde est peut-être ici ?)")
             return True
+
+        # --- EFFET DU CHIEN ---
+        elif item_to_use.name == "Chien":
+            print("\n🐶 Vous flattez la tête du chien et lui dites de chercher.")
+            print("Le chien renifle l'air...")
+            found_something = False
+            
+            # Vérifier les salles adjacentes (Exits)
+            current_room = player.current_room
+            for direction, room in current_room.exits.items():
+                if room and room.inventory: # Si la salle existe et a des objets
+                    # On liste les objets (sauf les objets cachés/spéciaux si besoin)
+                    items_names = [i.name for i in room.inventory]
+                    if items_names:
+                        print(f"  🐕 Wouf ! Wouf ! (Il aboie vers le {direction} !)")
+                        print(f"     (Il semble avoir senti : {', '.join(items_names)})")
+                        found_something = True
+            
+            if not found_something:
+                print("  😿 Le chien couine doucement. Il ne sent rien d'intéressant autour.")
+            return True
+            
+        # --- AUTRES OBJETS ---
         else:
-            print(f"\n❌ Impossible d'activer la quête '{quest_name}'.\n")
+            print(f"\nVous ne savez pas comment utiliser '{item_to_use.name}' ici.")
             return False
-    
-    def rewards(game, list_of_words, number_of_parameters):
-        """Lister toutes les récompenses gagnées."""
-        l = len(list_of_words)
-        if l != number_of_parameters + 1:
-            command_word = list_of_words[0]
-            print(MSG0.format(command_word=command_word))
-            return False
-        
-        player = game.player
-        completed_count = len(game.quest_manager.completed_quests)
-        
-        print(f"\n=== RÉCOMPENSES ===")
-        print(f"Quêtes complétées: {completed_count}/3")
-        
-        if completed_count == 0:
-            print("Aucune récompense gagnée pour le moment.")
-        else:
-            print("Récompenses gagnées:")
-            for i, quest in enumerate(game.quest_manager.completed_quests, 1):
-                print(f"  {i}. {quest.name}")
-                for reward in quest.rewards:
-                    print(f"     • {reward['description']}")
-        
-        print()
-        return True
