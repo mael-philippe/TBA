@@ -44,14 +44,6 @@ Information et Aide
 
     quit : quitter le jeu
 
-Nouvelles Salles
-
-    Observatoire : Au-dessus du bureau du président, avec le Vieux
-
-    Terrasse : Au-dessus du bar, avec vue panoramique
-
-    Sauna : En-dessous de la salle de sport, endroit relaxant
-
 Mécaniques de Jeu
 Système d'Inventaire
 
@@ -125,9 +117,9 @@ Carte du jeu :
                             [Sauna]         [Entrée]        [Cave]
 
 Légende des étages :
-- Rez-de-chaussée : Entrée, Hall, Cuisine, Cave, Salle sport, Sauna
-- Étage 1 : Dortoir, Bar, Bureau
-- Étage 2 : Salle de jeux, Terrasse, Observatoire
+- Rez-de-chaussée : Entrée, Hall, Cuisine, Salle sport, Dortoir, Bar, Bureau
+- Sous Sol : Sauna, Cave
+- Étage 1 : Salle de jeux, Terrasse, Observatoire
 
 Guide Développeur
 Architecture du Projet
@@ -143,22 +135,6 @@ TBA-main/
 ├── player.py           # Classe Player avec inventaire
 ├── room.py             # Classe Room avec inventaire
 └── README.md           # Documentation
-
-Nouvelles Fonctionnalités
-
-1. Directions verticales :
-   - U (Up) : Monter d'un étage
-   - D (Down) : Descendre d'un étage
-
-2. Nouvelles salles :
-   - Observatoire : Salle thématique pour le Vieux
-   - Terrasse : Point de vue élevé
-   - Sauna : Zone de détente sous la salle de sport
-
-3. Réorganisation logique :
-   - PNJ placés dans des salles cohérentes avec leur rôle
-   - Objets spéciaux dans des lieux pertinents
-   - Architecture à 3 niveaux (rez-de-chaussée, étage 1, étage 2)
 
 Diagrammes de Classes
 <img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7
