@@ -234,8 +234,8 @@ TBA-project/
 
 ### Diagramme de classes
 
-
-
+#### Game.py
+<img width="303" height="462" alt="classes" src="https://github.com/user-attachments/assets/f1103786-cdbd-4fc5-b688-1433bb9036c2" />
 
 
 
