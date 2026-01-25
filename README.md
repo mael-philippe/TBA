@@ -19,7 +19,7 @@ Présentation du jeu sur Youtube : https://youtu.be/kSotockFKbI?si=HbLbv3QKpbeH_
 actions.py, character.py, command.py, events.py, game.py, item.py, player.py, quest.py, room.py
 
 2. Exécutez le jeu depuis votre terminal :
->>> python game.py
+> python game.py
 
 3. Suivez les instructions à l'écran et commencez votre aventure !
 
@@ -235,14 +235,33 @@ TBA-project/
 
 ### Diagramme de classes
 
-#### game.py
-<img width="303" height="462" alt="classes" src="https://github.com/user-attachments/assets/f1103786-cdbd-4fc5-b688-1433bb9036c2" />
-
-
 #### actions.py
 <img width="433" height="363" alt="classes" src="https://github.com/user-attachments/assets/46a13ccf-8cd2-4c79-8f59-2c5f9489845c" />
+
 
 #### character.py
 <img width="267" height="374" alt="classes" src="https://github.com/user-attachments/assets/bdf6f195-a412-4776-b9b6-92f2d91d1197" />
 
 
+#### command.py
+<img width="201" height="176" alt="classes" src="https://github.com/user-attachments/assets/cd51cfcd-02c7-4697-a697-c3336f6f4f4b" />
+
+
+#### game.py
+<img width="303" height="462" alt="classes" src="https://github.com/user-attachments/assets/f1103786-cdbd-4fc5-b688-1433bb9036c2" />
+
+
+#### item.py
+<img width="112" height="154" alt="classes" src="https://github.com/user-attachments/assets/39b27943-2f08-4f80-8949-ca11da658afb" />
+
+
+#### player.py
+<img width="268" height="704" alt="classes" src="https://github.com/user-attachments/assets/29c155ac-64ee-4cd2-ac18-9309d5dc5166" />
+
+
+#### quest.py
+<img width="592" height="330" alt="classes" src="https://github.com/user-attachments/assets/83509585-f400-404d-ba35-65482b1d9f23" />
+
+
+#### room.py
+<img width="256" height="396" alt="classes" src="https://github.com/user-attachments/assets/da5caeeb-c8cb-464d-b025-35c6c7b631df" />
