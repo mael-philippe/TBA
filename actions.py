@@ -75,8 +75,11 @@ class Actions:
         player = game.player
         print(f"\n=== État de {player.name} ===")
         print(f"❤️  Santé: {player.health}/{player.max_health}")
-        print(f"🎒 Inventaire: {len(player.inventory)} objets")
-        print(f"⚖️  Poids: {player.get_current_weight()}/{player.max_weight} kg")
+        
+        # Utiliser le nouveau résumé au lieu du simple comptage
+        print(player.get_status_summary())
+        
+        print(f"⚖️  Poids: {player.get_current_weight():.1f}/{player.max_weight} kg")
         if player.health < 30:
             print("⚠️  Attention: Santé critique!")
         print()
@@ -197,12 +200,20 @@ class Actions:
         
         current_room = player.current_room
         
-        item = current_room.remove_item(item_name)
+        item = current_room.get_item(item_name)  # ← MODIFIÉ : get_item() au lieu de remove_item()
         if item:
-            if player.add_item(item):
+            # Vérifier d'abord si le joueur peut prendre l'objet
+            if player.can_take_item(item):
+                # Si oui, retirer de la salle et ajouter à l'inventaire
+                current_room.remove_item(item_name)
+                player.add_item(item)
                 return True
             else:
-                current_room.add_item(item)
+                # Si non, laisser dans la salle et afficher message
+                print(f"\n❌ Trop lourd! Impossible de prendre '{item.name}'.")
+                print(f"   Poids actuel: {player.get_current_weight():.1f}/{player.max_weight} kg")
+                print(f"   Poids de l'objet: {item.weight:.1f} kg")
+                print(f"   L'objet '{item.name}' reste dans la salle.")
                 return False
         else:
             print(f"\n❌ L'objet '{item_name}' n'est pas dans cette salle.\n")
@@ -236,7 +247,7 @@ class Actions:
     @staticmethod
     def use(game, list_of_words, number_of_parameters):
         """
-        Utiliser un objet de l'inventaire (ex: use GPS, use Chien).
+        Utiliser un objet de l'inventaire (ex: use GPS, use Chien, use RedBull).
         """
         player = game.player
         l = len(list_of_words)
@@ -261,17 +272,41 @@ class Actions:
 
         # --- EFFET DU GPS ---
         if item_to_use.name == "GPS":
-            print("\n📡 --- ACTIVATION DU GPS MYSTIK --- 📡")
-            print("Scan des signaux en cours...")
-            found = False
-            for char in game.characters:
-                # On n'affiche pas les PNJ qui sont dans la même salle (on les voit déjà)
-                if char.current_room != player.current_room:
-                    print(f"  📍 {char.name} se trouve : {char.current_room.name}")
-                    found = True
+            print("\n📡 --- ACTIVATION DU GPS --- 📡")
+            print("TRIANGULATION DES SIGNAUX...\n")
             
-            if not found:
-                print("  (Aucun signal distant détecté. Tout le monde est peut-être ici ?)")
+            # Séparer les PNJ par distance
+            pnj_ici = []
+            pnj_ailleurs = []
+            
+            for char in game.characters:
+                if char.current_room:
+                    if char.current_room == player.current_room:
+                        pnj_ici.append(char.name)
+                    else:
+                        pnj_ailleurs.append((char.name, char.current_room.name))
+            
+            # Afficher d'abord ceux qui sont ici
+            if pnj_ici:
+                print("🎯 PNJ DANS VOTRE SALLE:")
+                for name in pnj_ici:
+                    print(f"  👤 {name} (vous le voyez)")
+                print()
+            
+            # Puis ceux qui sont ailleurs
+            if pnj_ailleurs:
+                print("📡 PNJ À DISTANCE:")
+                for name, room in pnj_ailleurs:
+                    print(f"  📍 {name} — {room}")
+                print()
+            
+            # Résumé
+            total = len(pnj_ici) + len(pnj_ailleurs)
+            if total == 0:
+                print("  (Aucun signal détecté)")
+            else:
+                print(f"📊 {total} PNJ localisés")
+            
             return True
 
         # --- EFFET DU CHIEN ---
@@ -294,8 +329,71 @@ class Actions:
             if not found_something:
                 print("  😿 Le chien couine doucement. Il ne sent rien d'intéressant autour.")
             return True
+        
+        # --- EFFET DU REDBULL ---
+        elif item_to_use.name == "RedBull":
+            print("\n⚡ --- BOISSON ÉNERGISANTE --- ⚡")
+            
+            # Vérifier si le joueur est déjà en pleine santé
+            if player.health >= player.max_health:
+                print("💪 Vous êtes déjà en pleine forme !")
+                print("(Vous gardez votre RedBull pour plus tard.)")
+                return False
+            
+            # Calculer la quantité de soin
+            heal_amount = 30
+            old_health = player.health
+            player.health = min(player.health + heal_amount, player.max_health)
+            actual_heal = player.health - old_health
+            
+            # Retirer l'objet de l'inventaire
+            player.remove_item("RedBull")
+            
+            print(f"💚 Vous buvez le RedBull et récupérez {actual_heal} PV !")
+            print(f"❤️  Santé: {player.health}/{player.max_health}")
+            
+            if actual_heal < heal_amount:
+                print("(Vous étiez presque en pleine santé.)")
+            
+            return True
+        
+        # --- EFFET DE LA PART DE PIZZA ---
+        elif item_to_use.name == "Part de pizza":
+            print("\n🍕 --- RESTAURANT ITALIEN --- 🍕")
+            
+            # Vérifier si le joueur est déjà en pleine santé
+            if player.health >= player.max_health:
+                print("🍽️  Vous êtes déjà rassasié !")
+                print("(Vous gardez votre pizza pour plus tard.)")
+                return False
+            
+            # Calculer la quantité de soin
+            heal_amount = 50
+            old_health = player.health
+            player.health = min(player.health + heal_amount, player.max_health)
+            actual_heal = player.health - old_health
+            
+            # Retirer l'objet de l'inventaire
+            player.remove_item("Part de pizza")
+            
+            print(f"💚 Vous mangez la part de pizza et récupérez {actual_heal} PV !")
+            print(f"❤️  Santé: {player.health}/{player.max_health}")
+            
+            if actual_heal < heal_amount:
+                print("(Vous étiez presque en pleine santé.)")
+            
+            return True
+        
+        # --- EFFET DES TROPHÉES (optionnel - juste pour l'affichage) ---
+        elif item_to_use.name in ["Manette dorée", "Bouteille de vin", "Clé USB", 
+                                "Documents", "Réponses aux examens"]:
+            print(f"\n🏆 Vous examinez votre trophée : {item_to_use.name}")
+            print(f"📝 {item_to_use.description}")
+            print("(Cet objet vous sera utile pour prouver votre valeur au président.)")
+            return True
             
         # --- AUTRES OBJETS ---
         else:
-            print(f"\nVous ne savez pas comment utiliser '{item_to_use.name}' ici.")
+            print(f"\n🤔 Vous ne savez pas comment utiliser '{item_to_use.name}' ici.")
+            print("(Essayez dans une autre situation ou avec un autre personnage.)")
             return False

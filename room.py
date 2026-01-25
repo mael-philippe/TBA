@@ -48,7 +48,8 @@ class Room:
         
         inventory_str = "\nObjets visibles:\n"
         for i, item in enumerate(self.inventory, 1):
-            inventory_str += f"    {i}. {item}\n"
+            # CORRECTION : Formater avec 1 décimale
+            inventory_str += f"    {i}. {item.name} : {item.description} ({item.weight:.1f} kg)\n"
         return inventory_str
     
     def add_item(self, item):

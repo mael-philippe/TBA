@@ -11,6 +11,10 @@ class Character:
         self.movement_enabled = True
         self.interacted = False
         
+        # AJOUT : Contrôle du mouvement
+        self.can_move_now = True
+        self.waiting_for_player_move = False
+        
         # Comportement spécial (Events)
         self.interaction_behavior = None
         
@@ -22,6 +26,10 @@ class Character:
         """Interagir avec le personnage"""
         print(f"\n=== {self.name} ===")
         print(self.description)
+        
+        # AJOUT : Bloquer ce PNJ jusqu'au prochain déplacement du joueur
+        self.can_move_now = False
+        self.waiting_for_player_move = True
         
         # 1. Interaction Spéciale (Mini-jeu)
         if self.interaction_behavior:
@@ -48,41 +56,55 @@ class Character:
 
     def move(self):
         """Déplacer le personnage vers une salle adjacente"""
-        # Si le mouvement est désactivé (ex: Le Vieux)
-        if not self.movement_enabled:
+        # 1. Vérification si le mouvement est autorisé
+        if not self.movement_enabled:  # ← Le Vieux est bloqué ici
             return False
-            
-        # Sécurité
+                
+        # 2. Vérification des flags (si bloqué après interaction)
+        if not self.can_move_now:  # ← Bloqué après un talk
+            return False
+                
+        # 3. Vérification si la salle existe
         if self.current_room is None:
             return False
 
-        # Trouver les sorties valides (pas les murs/None)
-        available_exits = [direction for direction, room in self.current_room.exits.items() 
-                          if room is not None]
+        # 4. Liste des 6 directions possibles (même si certaines n'existent pas)
+        all_directions = ["N", "E", "S", "O", "U", "D"]
         
-        # S'il n'y a nulle part où aller
-        if not available_exits:
-            return False
+        # 5. Choisir une direction au hasard parmi les 6
+        direction = random.choice(all_directions)
         
-        # Choisir une direction au hasard
-        direction = random.choice(available_exits)
+        # 6. Vérifier si cette direction existe dans les sorties
+        if direction not in self.current_room.exits:
+            return False  # ← Direction n'existe pas, pas de déplacement
+        
+        # 7. Vérifier si la sortie n'est pas un mur (None)
         next_room = self.current_room.exits[direction]
+        if next_room is None:
+            return False  # ← C'est un mur, pas de déplacement
         
-        if next_room:
-            # 1. Retirer de la salle actuelle
-            if self in self.current_room.characters:
-                self.current_room.characters.remove(self)
-            
-            # 2. Ajouter à la nouvelle salle
-            next_room.add_character(self)
-            self.current_room = next_room
-            
-            # Debug optionnel pour voir les mouvements dans la console
-            # print(f"[DEBUG] {self.name} va vers {direction} ({next_room.name})")
-            
-            return True
+        # 8. AJOUT IMPORTANT : Vérifier si la prochaine salle est le Bureau du Président
+        if next_room.name == "Bureau du Président":
+            return False  # ← Les PNJ ne peuvent pas entrer dans le bureau
         
-        return False
+        # 9. Effectuer le déplacement
+        # Retirer de la salle actuelle
+        if self in self.current_room.characters:
+            self.current_room.characters.remove(self)
+        
+        # Ajouter à la nouvelle salle
+        next_room.add_character(self)
+        self.current_room = next_room
+        
+        # Debug optionnel pour voir les mouvements
+        # print(f"[DEBUG] {self.name} va vers {direction} ({next_room.name})")
+        
+        return True  # ← Déplacement réussi
+    
+    def reset_movement_flags(self):
+        """Réactiver le mouvement après un déplacement du joueur"""
+        self.can_move_now = True
+        self.waiting_for_player_move = False
     
     def reset_position(self):
         """Ramène le personnage à son point de spawn (si besoin)"""

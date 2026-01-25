@@ -21,7 +21,7 @@ class Game:
         
         # Gestion du temps
         self.turn_count = 0
-        self.consecutive_look_count = 0
+        # SUPPRIMER: self.consecutive_look_count = 0
         
         # Gestion du spawn (objets aléatoires)
         self.spawn_timer = 0
@@ -114,11 +114,12 @@ class Game:
     def _create_items(self):
         """Création des objets uniques (GPS, Chien)"""
         
-        # 1. Le GPS (1.5 kg) - Dans l'observatoire (logique pour un traqueur)
+        # 1. Le GPS (1.5 kg) - Dans la cave
         gps = Item("GPS", "un traqueur de PNJ haute technologie", 1.5)
-        self.rooms[10].add_item(gps) # Observatoire
+        self.rooms[3].add_item(gps) # Cave
         
-        # 2. Le Chien (2.7 kg) - Dans le sauna (pourquoi pas, c'est amusant!)
+        # 2. Le Chien (2.7 kg) - Dans le sauna 
+        # CORRECTION : Utiliser un poids avec 1 décimale
         chien = Item("Chien", "un fidèle compagnon au flair infaillible", 2.7)
         self.rooms[5].add_item(chien) # Sauna
 
@@ -173,23 +174,17 @@ class Game:
                 print(f"\n[INFO MONDE] Un {item_name} est apparu dans : {random_room.name} !")
 
     def win(self):
-        required_trophies = ["Manette dorée", "Bouteille de vin", "Clé USB", "Documents", "Réponses aux examens"]
-        trophies_count = sum(1 for item in self.player.inventory if item.name in required_trophies)
-        if trophies_count >= 4:
-            print("\n🏆 VICTOIRE ABSOLUE ! 🏆")
-            print("Vous avez vaincu la fraternité Mystik !")
-            return True
+        # Cette fonction n'est plus nécessaire ici puisque la victoire
+        # est gérée dans player._handle_president_encounter()
+        # Mais on la garde pour d'autres conditions de victoire
         return False
     
     def loose(self):
         if self.player.health <= 0:
             print("\n💀 Vous êtes K.O.")
             return True
-        if self.player.current_room.name == "Bureau du Président":
-            boss_items = sum(1 for item in self.player.inventory if item.weight in [0.5, 1.2, 0.1])
-            if boss_items < 2:
-                print("\n⛔ Le Président vous vire du bureau !")
-                return True
+        # SUPPRIMEZ l'ancienne vérification du bureau
+        # La logique est maintenant gérée dans player.move()
         return False
 
     def play(self):
@@ -216,12 +211,14 @@ class Game:
         print("\nFin du jeu.")
 
     def update_game_state(self):
+        """Gère les mouvements des PNJ et le spawn d'objets"""
         for character in self.characters:
             character.move()
         self._handle_item_spawning()
 
     def process_command(self, command_string):
-        if not command_string.strip(): return False
+        if not command_string.strip(): 
+            return False
         
         list_of_words = command_string.split(" ")
         command_word = list_of_words[0]
@@ -229,32 +226,34 @@ class Game:
         if command_word in self.commands:
             command = self.commands[command_word]
             
-            # Gestion LOOK (temps)
+            # Gestion LOOK
             if command_word == "look":
                 command.action(self, list_of_words, command.number_of_parameters)
-                self.consecutive_look_count += 1
-                if self.consecutive_look_count >= 3:
-                    print("\n(Le temps passe...)")
-                    self.consecutive_look_count = 0
-                    return True
-                return False
-
-            self.consecutive_look_count = 0
+                return False  # ← Look ne fait PAS bouger les PNJ
             
             result = command.action(self, list_of_words, command.number_of_parameters)
             
-            # Actions qui font passer le temps
-            action_takes_time = (command_word == "go" and result) or \
-                                (command_word == "talk") or \
-                                (command_word == "use") # Utiliser un objet prend du temps aussi !
-            
-            if action_takes_time:
+            # Seul "go" réussi permet aux PNJ de bouger
+            if command_word == "go" and result:
+                # 1. Le temps passe
                 self.turn_count += 1
-                if self.turn_count <= 3: return False
-                elif self.turn_count % 2 == 0: return True
-                else: return True # Le temps passe pour le spawn, même si PNJ bougent pas
+                
+                # 2. Réactiver le mouvement de TOUS les PNJ qui attendaient
+                for character in self.characters:
+                    if hasattr(character, 'waiting_for_player_move'):
+                        character.reset_movement_flags()
+                
+                # 3. Faire bouger les PNJ (TOUS LES TOURS)
+                return True  # ← Retourne TOUJOURS True pour un go réussi
             
+            # Les autres commandes font passer le temps mais ne déclenchent PAS le mouvement
+            elif command_word in ["talk", "use"]:
+                self.turn_count += 1
+                return False  # ← Pas de mouvement des PNJ
+            
+            # Pour les autres commandes (status, check, etc.)
             return False
+        
         else:
             print(f"\nCommande '{command_word}' inconnue.")
             return False

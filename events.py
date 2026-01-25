@@ -47,8 +47,15 @@ def guard_interaction(player, game):
             
             if not deja_gagne:
                 recompense = Item(nom_objet, "les codes de sécurité", 0.1)
-                player.inventory.append(recompense)
-                print(f"\n🎁 Vous recevez : {nom_objet} !")
+                # VÉRIFIER si le joueur peut prendre l'objet
+                if player.can_take_item(recompense):
+                    player.inventory.append(recompense)
+                    print(f"\n🎁 Vous recevez : {nom_objet} !")
+                else:
+                    print(f"\n💔 Le garde vous tend {nom_objet}, mais vous n'avez plus de place !")
+                    print("   L'objet tombe au sol.")
+                    # Ajouter l'objet à la salle actuelle
+                    player.current_room.add_item(recompense)
             else:
                 print("« Attends, tu as déjà un pass ! Passe ton chemin. »")
             return True
@@ -147,8 +154,15 @@ def captain_interaction(player, game):
         
         if not deja_gagne:
             recompense = Item(nom_objet, "des preuves de matchs truqués", 0.5)
-            player.inventory.append(recompense)
-            print(f"\n🎁 Vous recevez : {nom_objet} !")
+            # VÉRIFIER si le joueur peut prendre l'objet
+            if player.can_take_item(recompense):
+                player.inventory.append(recompense)
+                print(f"\n🎁 Vous recevez : {nom_objet} !")
+            else:
+                print(f"\n💔 Le coach vous tend {nom_objet}, mais vous n'avez plus de place !")
+                print("   L'objet tombe au sol.")
+                # Ajouter l'objet à la salle actuelle
+                player.current_room.add_item(recompense)
         else:
             print("« Mais tu as déjà les papiers ! Fiche le camp maintenant. »")
         return True
@@ -187,8 +201,15 @@ def champion_interaction(player, game):
     print("\n🏆 « GG ! Tu gères. »")
     if not deja_gagne:
         recompense = Item(nom_objet, "le trophée du gamer", 0.5)
-        player.inventory.append(recompense)
-        print(f"🎁 Vous recevez : {nom_objet} !")
+        # VÉRIFIER si le joueur peut prendre l'objet
+        if player.can_take_item(recompense):
+            player.inventory.append(recompense)
+            print(f"\n🎁 Vous recevez : {nom_objet} !")
+        else:
+            print(f"\n💔 Le Geek vous tend {nom_objet}, mais vous n'avez plus de place !")
+            print("   L'objet tombe au sol.")
+            # Ajouter l'objet à la salle actuelle
+            player.current_room.add_item(recompense)
     else:
         print("(Il cherche sa manette...) « Ah mince, je te l'ai déjà donnée ! »")
     return True
@@ -212,8 +233,15 @@ def drunk_interaction(player, game):
         print("✨ GAGNÉ !")
         if not deja_gagne:
             recompense = Item(nom_objet, "un grand cru convoité", 1.2)
-            player.inventory.append(recompense)
-            print(f"🎁 Vous recevez : {nom_objet} !")
+            # VÉRIFIER si le joueur peut prendre l'objet
+            if player.can_take_item(recompense):
+                player.inventory.append(recompense)
+                print(f"\n🎁 Vous recevez : {nom_objet} !")
+            else:
+                print(f"\n💔 L'ivrogne vous tend {nom_objet}, mais vous n'avez plus de place !")
+                print("   L'objet tombe au sol.")
+                # Ajouter l'objet à la salle actuelle
+                player.current_room.add_item(recompense)
         else:
             print("« Hips... Je t'ai déjà tout donné je crois... »")
         return True
@@ -270,8 +298,15 @@ def old_member_interaction(player, game):
         print("\n🎉 VICTOIRE !")
         if not deja_gagne:
             recompense = Item(nom_objet, "la clé de la réussite", 0.1)
-            player.inventory.append(recompense)
-            print(f"🎁 Vous recevez : {nom_objet} !")
+            # VÉRIFIER si le joueur peut prendre l'objet
+            if player.can_take_item(recompense):
+                player.inventory.append(recompense)
+                print(f"\n🎁 Vous recevez : {nom_objet} !")
+            else:
+                print(f"\n💔 Le Vieux vous tend {nom_objet}, mais vous n'avez plus de place !")
+                print("   L'objet tombe au sol.")
+                # Ajouter l'objet à la salle actuelle
+                player.current_room.add_item(recompense)
         else:
             print("« Je n'ai plus rien pour toi, garnement ! »")
         return True

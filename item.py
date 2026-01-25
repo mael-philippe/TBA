@@ -14,4 +14,5 @@ class Item:
         self.weight = weight
     
     def __str__(self):
-        return f"{self.name} : {self.description} ({self.weight} kg)"
+        # CORRECTION : Formater avec 1 décimale
+        return f"{self.name} : {self.description} ({self.weight:.1f} kg)"
