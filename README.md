@@ -1,107 +1,179 @@
-Infiltration Mystik - Jeu d'Aventure Textuel
-Guide Utilisateur
-Installation et Lancement
+# Campus Crawler - Jeu d'Aventure Textuel
 
-Le jeu se joue dans le terminal et utilise les 8 fichiers .py (actions, character, command, events, game, item, player & room). Pour initier la partie, exécutez le programme game.py.
-Contexte du Jeu
+## Contexte du Jeu
 
-Le jeu se déroule dans une université. Le but du jeu est de s'infiltrer dans la fraternité Mystik, collecter des preuves compromettantes et la faire capituler. Vous êtes membre de la fraternité Banditos.
-Objectif
+Vous êtes étudiant(e) dans une nouvelle université et vous avez un objectif ambitieux : réussir l'année. Pour y parvenir, vous devez accomplir diverses quêtes, résoudre des énigmes, et démontrer en relevant des défis.
 
-Collecter suffisamment de preuves (au moins 2) sur les Mystik tout en restant en vie. Certaines interactions peuvent vous faire perdre des points de vie.
-Commandes Disponibles
-Déplacement et Navigation
+Votre mission : compléter au moins **4 quêtes** sur les 7 disponibles, collecter des objets trophées, et vous présenter devant le président de la fraternité pour revendiquer votre place.
 
-    go <direction> : se déplacer dans une direction cardinale (N, E, S, O, U=Up, D=Down)
 
-    back : revenir à la salle précédente
+## Installation et Lancement
 
-    look : observer attentivement la salle actuelle
+### Prérequis
+- Python 3.8 ou supérieur
+- Terminal/console de commande
 
-Gestion des Objets
+### Lancement du jeu
+1. Assurez-vous que tous les fichiers Python sont dans le même dossier :
+actions.py, character.py, command.py, events.py, game.py, item.py, player.py, quest.py, room.py
 
-    take <nom_objet> : prendre un objet dans la salle (ex: take Clé USB, take Documents)
+2. Exécutez le jeu depuis votre terminal :
+>>> python game.py
 
-    drop <nom_objet> : déposer un objet de votre inventaire dans la salle
+3. Suivez les instructions à l'écran et commencez votre aventure !
 
-    check : vérifier le contenu de votre inventaire avec le poids actuel
 
-    Astuce : Les noms composés sont acceptés (ex: take Clé USB, drop Bouteille de vin)
+## Le jeu
 
-Interactions Sociales
+### Objectifs du Jeu
 
-    talk <nom_personnage> : parler à un personnage présent dans la salle
+#### Objectif principal
 
-    Personnages disponibles : Garde, Ivre, Champion, Coach, Vieux
+Compléter au moins 4 quêtes sur 7 pour prouver votre valeur et réussir votre année scolaire.
 
-Information et Aide
+#### Quêtes disponibles
 
-    status : afficher votre état de santé et vos statistiques
+1. "Le Juste Prix" (Garde) : Devinez le code de sécurité
 
-    history : afficher l'historique des salles visitées
+2. "Le Ring" (Coach) : Combat de boxe contre le coach
 
-    help : afficher la liste des commandes disponibles
+3. "Quiz du Gamer" (Champion) : Quiz sur les jeux vidéo
 
-    quit : quitter le jeu
+4. "Pari aux Dés" (Ivre) : Lancer de dés contre l'ivrogne
 
-Mécaniques de Jeu
-Système d'Inventaire
+5. "Pierre-Feuille-Ciseaux" (Vieux) : Chifoumi contre le sage
 
-    Capacité : 5 kg maximum
+6. "L'Explorateur Intrépide" (Garde) : Explorer les 4 coins du campus
 
-    Poids des objets : Chaque objet a un poids différent
+7. "Le Collectionneur" (Ivre) : Collectionner 3 objets spécifiques
 
-    Affichage : check montre le poids actuel/5 kg
+### Commandes disponibles
 
-    Messages : Confirmations claires quand vous prenez/déposez des objets
+Déplacement et navigation :
 
-Points de Vie
+    go <direction>      : Se déplacer (N, E, S, O, U=Up, D=Down)
+    back                : Revenir à la salle précédente
+    look                : Observer la salle actuelle (objets + PNJ)
 
-    Démarrage : 100 points de vie
+Gestion des objets :
 
-    Perte de vie : Certaines interactions vous font perdre des points
+    take <objet>        : Prendre un objet dans la salle
+    drop <objet>        : Déposer un objet de votre inventaire
+    check               : Vérifier votre inventaire
+    use <objet>         : Utiliser un objet spécial (GPS, Chien, consommables)
 
-    Game Over : Si vos points tombent à 0
+Intéractions sociales :
 
-    Soins : Certains objets/choix restaurent de la vie
+    talk <PNJ>          : Parler à un personnage non-joueur
 
-Personnages Interactifs
+(PNJ disponibles : Garde, Ivre, Champion, Coach, Vieux)
 
-Chaque personnage propose des défis différents :
+Informations et aide :
 
-    Garde (Porte d'entrée) : contrôle l'accès à la fraternité
+    status              : Afficher votre état (santé, inventaire, poids)
+    history             : Voir l'historique des salles visitées
+    quests              : Voir toutes les quêtes disponibles
+    progress            : Suivre votre progression sur les quêtes spéciales
+    help                : Afficher cette aide
+    quit                : Quitter le jeu
 
-    Ivre (Bar) : défis alcoolisés dans le bar
 
-    Champion (Salle de jeux) : jeux vidéo et quiz
+### Mécaniques de jeu
 
-    Coach (Salle de sport) : combat de boxe et réflexes
+#### Système de Santé
 
-    Vieux (Observatoire) : histoires et secrets dans l'observatoire
+    Santé initiale : 100 points de vie
 
-Objets à Collecter
+    Santé critique : < 30 points (affichage d'avertissement)
 
-    Preuves : Documents, Clé USB, Réponses aux examens
+    Game Over : Si la santé atteint 0
 
-    Utilitaires : GPS (trouve les PNJ), Chien (sent les objets)
+    Soins : Via objets consommables (RedBull, Part de pizza)
 
-    Consommables : RedBull, Part de pizza
+#### Inventaire et Poids
 
-Conseils de Jeu
+    Capacité maximum : 5 kg (améliorable via quêtes)
 
-    Utilisez U (Up) et D (Down) pour naviguer entre les étages
+    Poids des objets : Varies selon l'objet (0.1 à 2.7 kg)
 
-    Parlez à tous les personnages pour découvrir des objets cachés
+    Vérification : check affiche le poids actuel/maximum
 
-    Utilisez look dans chaque salle pour ne rien manquer
+    Limites : Impossible de prendre un objet si trop lourd
 
-    Surveillez votre poids avec check (limite 5 kg)
+#### Personnages (PNJ) et Quêtes
 
-    Collectez au moins 4 objets spéciaux pour gagner
+  Garde (Porte d'entrée)
 
-    Faites attention à votre santé avec status
+    Quête principale : "Le Juste Prix"
 
-Carte du jeu :
+    Mini-jeu : Deviner un nombre entre 1 et 100
+
+    Récompense : Clé USB
+
+  Coach (Salle de sport)
+
+    Quête principale : "Le Ring"
+
+    Mini-jeu : Combat de boxe (QTE)
+
+    Récompense : Documents compromettants
+
+  Champion (Salle de jeux)
+
+    Quête principale : "Quiz du Gamer"
+
+    Mini-jeu : Quiz sur les jeux vidéo
+
+    Récompense : Manette dorée
+
+  Ivre (Bar)
+
+    Quête principale : "Pari aux Dés"
+
+    Mini-jeu : Lancer de dés
+
+    Récompense : Bouteille de vin
+
+  Vieux (Observatoire)
+
+    Quête principale : "Pierre-Feuille-Ciseaux"
+
+    Mini-jeu : Chifoumi avec triche optionnelle
+
+    Récompense : Réponses aux examens
+
+
+#### Objets Spéciaux
+
+🏆 Trophées (nécessaires pour gagner)
+
+    Manette dorée, Bouteille de vin, Clé USB, Documents, Réponses aux examens
+
+    Chaque trophée complété = +1 quête réussie
+
+    Nécessite 4+ trophées pour gagner
+
+🔧 Outils Utilitaires
+
+    GPS : Localise tous les PNJ sur la carte
+
+    Chien : Détecte les objets dans les salles adjacentes
+
+🍖 Consommables
+
+    RedBull : Restaure 30 points de vie
+
+    Part de pizza : Restaure 50 points de vie
+
+
+🎁 Récompenses de Quêtes
+
+    Carte du campus (Explorateur) : Améliore les descriptions
+
+    Coffre de rangement (Collectionneur) : +2 kg de capacité
+
+
+#### Carte du jeu :
 
                          [Observatoire]  [Salle de Jeux]  [Terrasse]
                                |               |               |
@@ -117,24 +189,73 @@ Carte du jeu :
                             [Sauna]         [Entrée]        [Cave]
 
 Légende des étages :
-- Rez-de-chaussée : Entrée, Hall, Cuisine, Salle sport, Dortoir, Bar, Bureau
-- Sous Sol : Sauna, Cave
-- Étage 1 : Salle de jeux, Terrasse, Observatoire
 
-Guide Développeur
-Architecture du Projet
-text
+    Rez-de-chaussée : Entrée, Hall, Cuisine, Salle sport, Dortoir, Bar, Bureau
 
-TBA-main/
-├── actions.py          # Implémentation des commandes
-├── character.py        # Classe Character pour les PNJ
-├── command.py          # Système de commandes
-├── events.py           # Événements d'interaction
-├── game.py             # Point d'entrée principal
-├── item.py             # Classe Item pour les objets
-├── player.py           # Classe Player avec inventaire
-├── room.py             # Classe Room avec inventaire
+    Sous-sol : Sauna, Cave
+
+    Étage supérieur : Salle de jeux, Terrasse, Observatoire
+
+
+## Conseil de stratégie
+
+1. Commencez par explorer : Utilisez look dans chaque salle et faites la quête du garde dès le début du jeu.
+
+2. Gérez votre inventaire : Les trophées sont légers, conservez-les ! Les outils GPS/Chien sont très utiles mais peuvent être trop lourds, surtout en fin de partie.
+
+3. Séquences recommandées :
+
+- Parlez au Garde
+
+- Récupérez le GPS dans la Cave et le Chien dans le Sauna
+
+- Utilisez use GPS pour localiser facilement les PNJ
+
+- Santé : Conservez toujours un consommable de soin pour les mini-jeux difficiles
+
+
+## Guide développeur
+
+### Architecture du Projet
+
+TBA-project/
+├── actions.py          # Toutes les actions/commandes du jeu
+├── character.py        # Classe Character (PNJ avec mouvements)
+├── command.py          # Système de commandes et parsing
+├── events.py           # Mini-jeux et interactions spéciales
+├── game.py             # Point d'entrée principal et boucle de jeu
+├── item.py             # Classe Item (objets avec poids)
+├── player.py           # Classe Player (inventaire, santé, historique)
+├── quest.py            # Système de quêtes (Quest, QuestManager)
+├── room.py             # Classe Room (salles avec inventaire)
 └── README.md           # Documentation
+
+
+### Diagramme de classes
+![alt text](image.png)
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                         ARCHITECTURE                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Game ──┬── Player ──┬── Inventory                          │
+│         │            ├── History                            │
+│         │            └── Current Room                       │
+│         │                                                   │
+│         ├── Room ─────┬── Exits (to other Rooms)            │
+│         │             ├── Inventory (Items)                 │
+│         │             └── Characters (PNJ)                  │
+│         │                                                   │ 
+│         ├── Character ─── Quest                             │
+│         │                                                   │
+│         ├── QuestManager ──┬── Quests                       │
+│         │                  ├── Active Quests                │
+│         │                  └── Completed Quests             │
+│         │                                                   │
+│         └── Command ─── Action (callback)                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 
 Diagrammes de Classes
 <img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7

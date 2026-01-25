@@ -1,3 +1,7 @@
+"""
+Module principal du jeu - Contient la classe Game.
+"""
+
 import traceback
 import random
 from room import Room
@@ -7,23 +11,40 @@ from actions import Actions
 from character import Character
 from item import Item
 import events
+from quest import Quest, QuestManager
+
 
 class Game:
-    DEBUG = True 
+    """
+    Classe principale du jeu. Gère l'initialisation et la boucle de jeu.
+    
+    Attributes:
+        DEBUG (bool): Mode débogage
+        finished (bool): Si le jeu est terminé
+        rooms (list): Liste de toutes les salles
+        commands (dict): Dictionnaire des commandes disponibles
+        player (Player): Le joueur
+        characters (list): Liste des personnages
+        quest_manager (QuestManager): Gestionnaire de quêtes
+        turn_count (int): Compteur de tours
+        spawn_timer (int): Timer pour l'apparition d'objets
+        next_spawn_turn (int): Tour pour la prochaine apparition
+        spawnable_items (dict): Configuration des objets apparaissables
+    """
+    
+    DEBUG = True  # Mode débogage activé
     
     def __init__(self):
+        """Initialise une nouvelle partie."""
         self.finished = False
         self.rooms = []
         self.commands = {}
         self.player = None
         self.characters = []
-        self.required_items = ["Clé USB", "Documents", "Livre des secrets"]
+        self.quest_manager = QuestManager()
         
-        # Gestion du temps
+        # Gestion du temps et des apparitions
         self.turn_count = 0
-        # SUPPRIMER: self.consecutive_look_count = 0
-        
-        # Gestion du spawn (objets aléatoires)
         self.spawn_timer = 0
         self.next_spawn_turn = random.randint(1, 5)
         self.spawnable_items = {
@@ -32,7 +53,10 @@ class Game:
         }
     
     def setup(self):
-        # Ajout de la commande USE
+        """
+        Configure le jeu : commandes, salles, objets, quêtes, personnages.
+        """
+        # Définir les commandes disponibles
         self.commands["help"] = Command("help", " : afficher cette aide", Actions.help, 0)
         self.commands["quit"] = Command("quit", " : quitter le jeu", Actions.quit, 0)
         self.commands["go"] = Command("go", " <direction> : se déplacer (N,E,S,O,U,D)", Actions.go, 1)
@@ -44,16 +68,19 @@ class Game:
         self.commands["look"] = Command("look", " : observer", Actions.look, 0)
         self.commands["take"] = Command("take", " <objet> : prendre", Actions.take, 1)
         self.commands["drop"] = Command("drop", " <objet> : déposer", Actions.drop, 1)
-        
-        # NOUVELLE COMMANDE
         self.commands["use"] = Command("use", " <objet> : utiliser un objet spécial", Actions.use, 1)
+        self.commands["quests"] = Command("quests", " : afficher les quêtes", Actions.quests, 0)
+        self.commands["progress"] = Command("progress", " : progression des quêtes spéciales", Actions.progress, 0)
         
+        # Créer les éléments du jeu
         self._create_rooms()
-        self._create_items() # On place les objets uniques ici
+        self._create_items()
+        self._create_quests()
         self._create_characters()
 
     def _create_rooms(self):
-        # Création de toutes les salles
+        """Crée toutes les salles du jeu et leurs connexions."""
+        # Création des salles
         entree = Room("Porte d'entrée", "devant l'entrée principale de la fraternité Mystik.")
         hall = Room("Hall principal", "dans le grand hall d'entrée. Des portraits anciens décorent les murs.")
         cuisine = Room("Cuisine", "dans une cuisine équipée. Des odeurs de nourriture flottent dans l'air.")
@@ -67,88 +94,153 @@ class Game:
         observatoire = Room("Observatoire", "dans un observatoire équipé d'un télescope professionnel.")
         salle_jeux = Room("Salle de jeux", "dans une salle de jeux moderne avec consoles et jeux de société.")
         
-        # Configuration des sorties
-        # Porte d'entrée
+        # Configuration des sorties (connexions entre salles)
         entree.exits = {"N": hall}
-        
-        # Hall principal
         hall.exits = {"S": entree, "E": cuisine, "O": salle_sport, "N": dortoir}
-        
-        # Cuisine
         cuisine.exits = {"O": hall, "D": cave, "N": bar}
-        
-        # Cave
         cave.exits = {"U": cuisine}
-        
-        # Salle de sport
         salle_sport.exits = {"E": hall, "D": sauna, "N": bureau}
-        
-        # Sauna
         sauna.exits = {"U": salle_sport}
-        
-        # Dortoir
         dortoir.exits = {"S": hall, "E": bar, "O": bureau, "U": salle_jeux}
-        
-        # Bar
         bar.exits = {"O": dortoir, "U": terrasse, "S": cuisine}
-        
-        # Terrasse
         terrasse.exits = {"D": bar, "O": salle_jeux}
-        
-        # Bureau du Président
         bureau.exits = {"E": dortoir, "U": observatoire}
-        
-        # Observatoire
         observatoire.exits = {"D": bureau, "E": salle_jeux}
-        
-        # Salle de jeux
         salle_jeux.exits = {"D": dortoir, "O": observatoire, "E": terrasse}
         
+        # Stocker toutes les salles
         self.rooms = [
             entree, hall, cuisine, cave, salle_sport, sauna,
             dortoir, bar, terrasse, bureau, observatoire, salle_jeux
         ]
-        self.player = Player(input("\nEntrez votre nom: "))
+        
+        # Créer le joueur
+        self.player = Player(input("\nEntrez votre nom: "), self)
         self.player.current_room = entree
 
     def _create_items(self):
-        """Création des objets uniques (GPS, Chien)"""
-        
-        # 1. Le GPS (1.5 kg) - Dans la cave
+        """Crée les objets uniques du jeu."""
+        # GPS - Outil de localisation des PNJ
         gps = Item("GPS", "un traqueur de PNJ haute technologie", 1.5)
-        self.rooms[3].add_item(gps) # Cave
+        self.rooms[3].add_item(gps)  # Dans la cave
         
-        # 2. Le Chien (2.7 kg) - Dans le sauna 
-        # CORRECTION : Utiliser un poids avec 1 décimale
+        # Chien - Compagnon qui trouve des objets
         chien = Item("Chien", "un fidèle compagnon au flair infaillible", 2.7)
-        self.rooms[5].add_item(chien) # Sauna
+        self.rooms[5].add_item(chien)  # Dans le sauna
 
-        # Note: Les pizzas et redbulls sont gérés par le spawner automatique
+    def _create_quests(self):
+        """Crée toutes les quêtes du jeu."""
+        from item import Item
+        
+        # Quête du Garde - Juste Prix
+        quest_garde = Quest(
+            name="Le Juste Prix",
+            description="Deviner le code de sécurité du Garde pour obtenir la Clé USB.",
+            character="Garde",
+            challenge_type="combat",
+            objective="Gagner au jeu du Juste Prix",
+            reward_item=Item("Clé USB", "les codes de sécurité", 0.1)
+        )
+        self.quest_manager.add_quest(quest_garde)
+        
+        # Quête du Coach - Boxe
+        quest_coach = Quest(
+            name="Le Ring",
+            description="Tenir 3 rounds contre le Coach de boxe pour obtenir ses Documents.",
+            character="Coach",
+            challenge_type="combat",
+            objective="Gagner le combat de boxe",
+            reward_item=Item("Documents", "des preuves de matchs truqués", 0.5)
+        )
+        self.quest_manager.add_quest(quest_coach)
+        
+        # Quête du Champion - Quiz
+        quest_champion = Quest(
+            name="Quiz du Gamer",
+            description="Répondre correctement au quiz du Champion pour gagner sa Manette dorée.",
+            character="Champion",
+            challenge_type="game",
+            objective="Répondre correctement aux questions",
+            reward_item=Item("Manette dorée", "le trophée du gamer", 0.5)
+        )
+        self.quest_manager.add_quest(quest_champion)
+        
+        # Quête de l'Ivre - Dés
+        quest_ivre = Quest(
+            name="Pari aux Dés",
+            description="Battre l'ivrogne aux dés pour gagner sa Bouteille de vin.",
+            character="Ivre",
+            challenge_type="drink",
+            objective="Gagner aux dés contre l'ivrogne",
+            reward_item=Item("Bouteille de vin", "un grand cru convoité", 1.2)
+        )
+        self.quest_manager.add_quest(quest_ivre)
+        
+        # Quête du Vieux - Chifoumi
+        quest_vieux = Quest(
+            name="Pierre-Feuille-Ciseaux",
+            description="Battre le vieux sage au chifoumi pour obtenir les Réponses aux examens.",
+            character="Vieux",
+            challenge_type="game",
+            objective="Gagner au pierre-feuille-ciseaux",
+            reward_item=Item("Réponses aux examens", "la clé de la réussite", 0.1)
+        )
+        self.quest_manager.add_quest(quest_vieux)
+        
+        # Quête d'exploration
+        quest_explorateur = Quest(
+            name="L'Explorateur Intrépide",
+            description="Atteindre les 4 coins extrêmes du campus: Cave, Observatoire, Sauna et Terrasse.",
+            character="Garde",
+            challenge_type="location_multi",
+            objective="Visiter: Cave, Observatoire, Sauna, Terrasse",
+            reward_item=Item("Carte du campus", "révèle toutes les sorties avec descriptions", 0.1)
+        )
+        self.quest_manager.add_quest(quest_explorateur)
+        
+        # Quête de collection
+        quest_collectionneur = Quest(
+            name="Le Collectionneur",
+            description="Rassembler les 3 objets de confort: RedBull, Part de pizza et Bouteille de vin.",
+            character="Ivre",
+            challenge_type="items_multi",
+            objective="Posséder: RedBull, Part de pizza, Bouteille de vin",
+            reward_item=Item("Coffre de rangement", "+2kg de capacité d'inventaire", 1.0)
+        )
+        self.quest_manager.add_quest(quest_collectionneur)
 
     def _create_characters(self):
-        garde = Character("Garde", "un colosse intimidant", self.rooms[0])  # Porte d'entrée
-        garde.interaction_behavior = events.guard_interaction
+        """Crée les personnages non-joueurs."""
+        # Récupérer les quêtes
+        quest_garde = self.quest_manager.get_quest_by_character("Garde")
+        quest_coach = self.quest_manager.get_quest_by_character("Coach")
+        quest_champion = self.quest_manager.get_quest_by_character("Champion")
+        quest_ivre = self.quest_manager.get_quest_by_character("Ivre")
+        quest_vieux = self.quest_manager.get_quest_by_character("Vieux")
+        
+        # Garde - À l'entrée
+        garde = Character("Garde", "un colosse intimidant", self.rooms[0], quest_garde)
         self.characters.append(garde)
         
-        ivre = Character("Ivre", "un membre éméché qui titube", self.rooms[7])  # Bar
-        ivre.interaction_behavior = events.drunk_interaction
+        # Ivre - Au bar
+        ivre = Character("Ivre", "un membre éméché qui titube", self.rooms[7], quest_ivre)
         self.characters.append(ivre)
         
-        champion = Character("Champion", "le geek ultime aux réflexes éclairs", self.rooms[11])  # Salle de jeux
-        champion.interaction_behavior = events.champion_interaction
+        # Champion - Salle de jeux
+        champion = Character("Champion", "le geek ultime aux réflexes éclairs", self.rooms[11], quest_champion)
         self.characters.append(champion)
         
-        coach = Character("Coach", "le coach de boxe musclé", self.rooms[4])  # Salle de sport
-        coach.interaction_behavior = events.captain_interaction 
+        # Coach - Salle de sport
+        coach = Character("Coach", "le coach de boxe musclé", self.rooms[4], quest_coach)
         self.characters.append(coach)
         
-        vieux = Character("Vieux", "l'ancien sage à la barbe blanche", self.rooms[10])  # Observatoire
-        vieux.interaction_behavior = events.old_member_interaction
+        # Vieux - Observatoire (ne bouge pas)
+        vieux = Character("Vieux", "l'ancien sage à la barbe blanche", self.rooms[10], quest_vieux)
         vieux.movement_enabled = False
         self.characters.append(vieux)
 
     def _handle_item_spawning(self):
-        """Gère l'apparition aléatoire d'objets de décor"""
+        """Gère l'apparition aléatoire d'objets de décor."""
         self.spawn_timer += 1
         if self.spawn_timer >= self.next_spawn_turn:
             self._spawn_random_item()
@@ -156,16 +248,21 @@ class Game:
             self.next_spawn_turn = random.randint(1, 5)
 
     def _spawn_random_item(self):
+        """Fait apparaître un objet aléatoire dans une salle."""
         item_name = random.choice(list(self.spawnable_items.keys()))
         config = self.spawnable_items[item_name]
         
+        # Compter combien de cet objet existent déjà
         current_count = 0
         for item in self.player.inventory:
-            if item.name == item_name: current_count += 1
+            if item.name == item_name: 
+                current_count += 1
         for room in self.rooms:
             for item in room.inventory:
-                if item.name == item_name: current_count += 1
+                if item.name == item_name: 
+                    current_count += 1
         
+        # Ne pas dépasser le maximum
         if current_count < config['max']:
             random_room = random.choice(self.rooms)
             new_item = Item(item_name, config['desc'], config['weight'])
@@ -174,31 +271,43 @@ class Game:
                 print(f"\n[INFO MONDE] Un {item_name} est apparu dans : {random_room.name} !")
 
     def win(self):
-        # Cette fonction n'est plus nécessaire ici puisque la victoire
-        # est gérée dans player._handle_president_encounter()
-        # Mais on la garde pour d'autres conditions de victoire
+        """
+        Vérifie si le joueur a gagné.
+        
+        Returns:
+            bool: True si le joueur a gagné
+        """
+        # La victoire se déclenche uniquement dans le Bureau du Président
         return False
     
     def loose(self):
+        """
+        Vérifie si le joueur a perdu.
+        
+        Returns:
+            bool: True si le joueur a perdu
+        """
         if self.player.health <= 0:
             print("\n💀 Vous êtes K.O.")
             return True
-        # SUPPRIMEZ l'ancienne vérification du bureau
-        # La logique est maintenant gérée dans player.move()
         return False
 
     def play(self):
+        """Boucle principale du jeu."""
         self.setup()
         self.print_welcome()
         
         while not self.finished:
             try:
+                # Demander une commande
                 command = input(f"\n{self.player.current_room.name} > ")
                 should_move = self.process_command(command)
                 
+                # Mettre à jour l'état du jeu si nécessaire
                 if should_move:
                     self.update_game_state()
                 
+                # Vérifier les conditions de fin
                 if self.win() or self.loose():
                     self.finished = True
                     
@@ -206,17 +315,30 @@ class Game:
                 self.finished = True
             except Exception as e:
                 print(f"Erreur: {e}")
-                if self.DEBUG: traceback.print_exc()
+                if self.DEBUG: 
+                    traceback.print_exc()
         
         print("\nFin du jeu.")
 
     def update_game_state(self):
-        """Gère les mouvements des PNJ et le spawn d'objets"""
+        """Met à jour l'état du jeu après un déplacement."""
+        # Faire bouger les PNJ
         for character in self.characters:
             character.move()
+        
+        # Gérer l'apparition d'objets
         self._handle_item_spawning()
 
     def process_command(self, command_string):
+        """
+        Traite une commande entrée par le joueur.
+        
+        Args:
+            command_string (str): La commande entrée
+            
+        Returns:
+            bool: True si la commande déclenche un déplacement
+        """
         if not command_string.strip(): 
             return False
         
@@ -226,32 +348,31 @@ class Game:
         if command_word in self.commands:
             command = self.commands[command_word]
             
-            # Gestion LOOK
+            # Gestion spéciale pour "look" (ne déclenche pas de déplacement)
             if command_word == "look":
                 command.action(self, list_of_words, command.number_of_parameters)
-                return False  # ← Look ne fait PAS bouger les PNJ
+                return False
             
+            # Exécuter l'action de la commande
             result = command.action(self, list_of_words, command.number_of_parameters)
             
-            # Seul "go" réussi permet aux PNJ de bouger
+            # Seul "go" réussi déclenche un déplacement
             if command_word == "go" and result:
-                # 1. Le temps passe
                 self.turn_count += 1
                 
-                # 2. Réactiver le mouvement de TOUS les PNJ qui attendaient
+                # Réactiver le mouvement des PNJ
                 for character in self.characters:
                     if hasattr(character, 'waiting_for_player_move'):
                         character.reset_movement_flags()
                 
-                # 3. Faire bouger les PNJ (TOUS LES TOURS)
-                return True  # ← Retourne TOUJOURS True pour un go réussi
+                return True
             
-            # Les autres commandes font passer le temps mais ne déclenchent PAS le mouvement
-            elif command_word in ["talk", "use"]:
+            # Les autres commandes font passer le temps sans déplacement
+            elif command_word in ["talk", "use", "quests", "progress", "status", 
+                                "check", "history", "back", "take", "drop"]:
                 self.turn_count += 1
-                return False  # ← Pas de mouvement des PNJ
+                return False
             
-            # Pour les autres commandes (status, check, etc.)
             return False
         
         else:
@@ -259,12 +380,16 @@ class Game:
             return False
 
     def print_welcome(self):
+        """Affiche le message de bienvenue et les instructions."""
         print(f"\n{'='*50}\nBIENVENUE DANS 'CAMPUS CRAWLER'\n{'='*50}")
         print(f"Bienvenue {self.player.name}.")
-        print("Commandes utiles: go, talk, take, drop, use, status...")
+        print("Commandes utiles: go, talk, take, drop, use, status, quests, progress...")
+        print("\n📜 Votre mission: Compléter des quêtes pour impressionner le président !")
+        print("   Tapez 'quests' pour voir toutes les quêtes.")
+        print("   Tapez 'progress' pour voir vos progrès sur les quêtes spéciales.")
         print(self.player.current_room.get_long_description())
 
+
 if __name__ == "__main__":
+    # Lancer le jeu
     Game().play()
-
-

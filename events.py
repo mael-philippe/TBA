@@ -1,10 +1,26 @@
+"""
+Module des mini-jeux et interactions spéciales.
+"""
+
 import random
 import time
 import string
 from item import Item
 
+
 def guard_interaction(player, game):
-    """Mini-jeu pour le Garde (Le Juste Prix / Code de Sécurité)"""
+    """
+    Mini-jeu du Garde : Le Juste Prix / Code de Sécurité.
+    
+    Le joueur doit deviner un nombre entre 1 et 100 en 6 essais.
+    
+    Args:
+        player (Player): Le joueur
+        game (Game): Instance du jeu
+        
+    Returns:
+        bool: True si le joueur gagne
+    """
     nom_objet = "Clé USB"
     
     print("\n=== LE GARDE DE LA PORTE ===")
@@ -14,7 +30,7 @@ def guard_interaction(player, game):
     print(f"« Si tu me le donnes, je te laisse entrer et je te file ma {nom_objet} de secours. »")
     print("« Sinon... je vais devoir t'apprendre les bonnes manières. »")
     
-    # Vérif si déjà gagné
+    # Vérifier si le joueur a déjà gagné
     deja_gagne = any(i.name == nom_objet for i in player.inventory)
 
     choix = input("\nEssayez-vous de deviner le code ? (O/N) > ").upper()
@@ -22,7 +38,7 @@ def guard_interaction(player, game):
         print("\n« C'est ça, circule avant que je m'énerve. »")
         return False
 
-    # Génération du code
+    # Générer un code secret
     code_secret = random.randint(1, 100)
     essais_max = 6
     print(f"\n🔐 Le Garde attend un nombre entre 1 et 100.")
@@ -40,35 +56,45 @@ def guard_interaction(player, game):
         elif guess > code_secret:
             print("Garde : « Plus petit ! »")
         else:
-            # VICTOIRE
+            # Victoire
             print(f"\n🔓 « {guess} »... C'est exact.")
             print("Le Garde semble impressionné (et un peu déçu de ne pas pouvoir taper).")
             print("« Ok, t'es clean. Tiens, prends ça au cas où. »")
             
             if not deja_gagne:
                 recompense = Item(nom_objet, "les codes de sécurité", 0.1)
-                # VÉRIFIER si le joueur peut prendre l'objet
                 if player.can_take_item(recompense):
                     player.inventory.append(recompense)
                     print(f"\n🎁 Vous recevez : {nom_objet} !")
                 else:
                     print(f"\n💔 Le garde vous tend {nom_objet}, mais vous n'avez plus de place !")
                     print("   L'objet tombe au sol.")
-                    # Ajouter l'objet à la salle actuelle
                     player.current_room.add_item(recompense)
             else:
                 print("« Attends, tu as déjà un pass ! Passe ton chemin. »")
             return True
 
-    # DÉFAITE (Boucle finie sans trouver)
+    # Défaite - Pas trouvé en 6 essais
     print(f"\n🚨 « FAUX ! Le code était {code_secret} ! »")
     print("« Intrus détecté ! Suppression immédiate ! »")
     print("Le Garde vous attrape par le col et vous jette contre le mur.")
     player.take_damage(25)
     return False
 
+
 def captain_interaction(player, game):
-    """Mini-jeu pour le Coach de Boxe (QTE / Réflexes)"""
+    """
+    Mini-jeu du Coach de Boxe : Test de réflexes (QTE).
+    
+    Le joueur doit taper rapidement des lettres pour esquiver les coups.
+    
+    Args:
+        player (Player): Le joueur
+        game (Game): Instance du jeu
+        
+    Returns:
+        bool: True si le joueur gagne
+    """
     nom_objet = "Documents"
     
     print("\n=== LE RING DU COACH ===")
@@ -110,23 +136,23 @@ def captain_interaction(player, game):
     while esquives_reussies < 3 and coups_recus < 2:
         print(f"\n🥊 ROUND {esquives_reussies + coups_recus + 1}")
         
-        # Choisir un coup et une lettre
+        # Choisir un coup et une lettre aléatoire
         coup = random.choice(coups_possibles)
-        lettre_cible = random.choice(string.ascii_lowercase) # Une lettre de a à z
+        lettre_cible = random.choice(string.ascii_lowercase)
         
         print("Le Coach prépare son coup...")
-        time.sleep(random.uniform(1.0, 2.0)) # Petit temps de suspense
+        time.sleep(random.uniform(1.0, 2.0))
         
         print(f"\n🔥 {coup['nom']} !!! Tapez '{lettre_cible}' !")
         
-        # Chronomètre
+        # Chronométrer la réponse
         start_time = time.time()
         reponse = input("> ").strip().lower()
         end_time = time.time()
         
         duree = end_time - start_time
         
-        # Vérification
+        # Vérifier la réponse
         if reponse == lettre_cible and duree <= coup['temps']:
             print(f"✅ ESQUIVE RÉUSSIE ! ({duree:.2f}s / {coup['temps']}s)")
             esquives_reussies += 1
@@ -138,7 +164,7 @@ def captain_interaction(player, game):
             
             print(f"💥 BIM ! Vous prenez un {coup['nom']} en pleine face !")
             coups_recus += 1
-            if player.take_damage(coup['degats']): # Si le joueur meurt
+            if player.take_damage(coup['degats']):
                 return False
 
     # Résultat final
@@ -154,27 +180,36 @@ def captain_interaction(player, game):
         
         if not deja_gagne:
             recompense = Item(nom_objet, "des preuves de matchs truqués", 0.5)
-            # VÉRIFIER si le joueur peut prendre l'objet
             if player.can_take_item(recompense):
                 player.inventory.append(recompense)
                 print(f"\n🎁 Vous recevez : {nom_objet} !")
             else:
                 print(f"\n💔 Le coach vous tend {nom_objet}, mais vous n'avez plus de place !")
                 print("   L'objet tombe au sol.")
-                # Ajouter l'objet à la salle actuelle
                 player.current_room.add_item(recompense)
         else:
             print("« Mais tu as déjà les papiers ! Fiche le camp maintenant. »")
         return True
 
+
 def champion_interaction(player, game):
-    """Mini-jeu pour le Champion (Quiz)"""
+    """
+    Mini-jeu du Champion : Quiz sur les jeux vidéo.
+    
+    Args:
+        player (Player): Le joueur
+        game (Game): Instance du jeu
+        
+    Returns:
+        bool: True si le joueur gagne
+    """
     nom_objet = "Manette dorée"
     print("\n=== LE DÉFI DU CHAMPION ===")
     print(f"« Si tu réponds correctement, je te donnerai ma {nom_objet} ! »")
     
     deja_gagne = any(i.name == nom_objet for i in player.inventory)
-    if input("\n(O/N) > ").upper() != "O": return False
+    if input("\n(O/N) > ").upper() != "O": 
+        return False
 
     questions = [
         {"text": "Lequel est un battle royale ?", "correct": "Fortnite", "others": ["Star Fox", "Luigi's Mansion"]},
@@ -187,11 +222,13 @@ def champion_interaction(player, game):
         print(f"\n❓ {q['text']}")
         options = [q['correct']] + q['others']
         random.shuffle(options)
-        for idx, opt in enumerate(options, 1): print(f"   {idx}) {opt}")
+        for idx, opt in enumerate(options, 1): 
+            print(f"   {idx}) {opt}")
         
         try:
             rep = int(input("Choix > "))
-            if options[rep-1] != q['correct']: raise ValueError
+            if options[rep-1] != q['correct']: 
+                raise ValueError
             print("✅ Correct !")
         except:
             print(f"❌ Faux ! C'était {q['correct']}.")
@@ -201,27 +238,36 @@ def champion_interaction(player, game):
     print("\n🏆 « GG ! Tu gères. »")
     if not deja_gagne:
         recompense = Item(nom_objet, "le trophée du gamer", 0.5)
-        # VÉRIFIER si le joueur peut prendre l'objet
         if player.can_take_item(recompense):
             player.inventory.append(recompense)
             print(f"\n🎁 Vous recevez : {nom_objet} !")
         else:
             print(f"\n💔 Le Geek vous tend {nom_objet}, mais vous n'avez plus de place !")
             print("   L'objet tombe au sol.")
-            # Ajouter l'objet à la salle actuelle
             player.current_room.add_item(recompense)
     else:
         print("(Il cherche sa manette...) « Ah mince, je te l'ai déjà donnée ! »")
     return True
 
+
 def drunk_interaction(player, game):
-    """Mini-jeu pour l'Ivre (Dés)"""
+    """
+    Mini-jeu de l'Ivre : Lancer de dés.
+    
+    Args:
+        player (Player): Le joueur
+        game (Game): Instance du jeu
+        
+    Returns:
+        bool: True si le joueur gagne
+    """
     nom_objet = "Bouteille de vin"
     print("\n=== LE DÉFI DE L'IVROGNE ===")
     print("« Je te parie ma meilleure bouteille aux dés ! »")
     
     deja_gagne = any(i.name == nom_objet for i in player.inventory)
-    if input("\n(O/N) > ").upper() != "O": return False
+    if input("\n(O/N) > ").upper() != "O": 
+        return False
 
     score_ivre = random.randint(1, 6)
     print(f"\n🎲 Ivre : {score_ivre}")
@@ -233,14 +279,12 @@ def drunk_interaction(player, game):
         print("✨ GAGNÉ !")
         if not deja_gagne:
             recompense = Item(nom_objet, "un grand cru convoité", 1.2)
-            # VÉRIFIER si le joueur peut prendre l'objet
             if player.can_take_item(recompense):
                 player.inventory.append(recompense)
                 print(f"\n🎁 Vous recevez : {nom_objet} !")
             else:
                 print(f"\n💔 L'ivrogne vous tend {nom_objet}, mais vous n'avez plus de place !")
                 print("   L'objet tombe au sol.")
-                # Ajouter l'objet à la salle actuelle
                 player.current_room.add_item(recompense)
         else:
             print("« Hips... Je t'ai déjà tout donné je crois... »")
@@ -253,59 +297,74 @@ def drunk_interaction(player, game):
         print("😐 ÉGALITÉ.")
         return False
 
+
 def old_member_interaction(player, game):
-    """Mini-jeu du Vieux (PFC)"""
+    """
+    Mini-jeu du Vieux Sage : Pierre-Feuille-Ciseaux.
+    
+    Args:
+        player (Player): Le joueur
+        game (Game): Instance du jeu
+        
+    Returns:
+        bool: True si le joueur gagne
+    """
     nom_objet = "Réponses aux examens"
     print("\n=== LE VIEUX SAGE ===")
     print("« Jouons ! Je parie les réponses aux examens. »")
     
     deja_gagne = any(i.name == nom_objet for i in player.inventory)
-    if input("\n(O/N) > ").upper() != "O": return False
+    if input("\n(O/N) > ").upper() != "O": 
+        return False
 
     print("\n1. Se boucher les oreilles\n2. Écouter (Tricher, -95 PV)")
     triche = input("> ") == "2"
     if triche:
         print("💥 La culpabilité vous ronge : -95 PV !")
-        if player.take_damage(95): return False
+        if player.take_damage(95): 
+            return False
 
     vic_j, vic_v = 0, 0
     coups = ["Pierre", "Feuille", "Ciseaux"]
     
     while vic_j < 2 and vic_v < 2:
         coup_v = random.choice(coups)
-        if triche: print(f"(Il va jouer {coup_v}...)")
+        if triche: 
+            print(f"(Il va jouer {coup_v}...)")
         
         print("\n1.Pierre 2.Feuille 3.Ciseaux")
         try:
             c = int(input("> "))
             coup_j = coups[c-1]
-        except: coup_j = "Rien"
+        except: 
+            coup_j = "Rien"
 
         print(f"Vous: {coup_j} vs Vieux: {coup_v}")
-        if coup_j == coup_v: continue
+        if coup_j == coup_v: 
+            continue
         
         win = (coup_j=="Pierre" and coup_v=="Ciseaux") or \
               (coup_j=="Feuille" and coup_v=="Pierre") or \
               (coup_j=="Ciseaux" and coup_v=="Feuille")
         
-        if win: vic_j += 1
+        if win: 
+            vic_j += 1
         else: 
             vic_v += 1
             print("Aïe ! Coup de canne !")
-            if player.take_damage(35): return False
+            if player.take_damage(35): 
+                return False
 
     if vic_j >= 2:
         print("\n🎉 VICTOIRE !")
         if not deja_gagne:
             recompense = Item(nom_objet, "la clé de la réussite", 0.1)
-            # VÉRIFIER si le joueur peut prendre l'objet
             if player.can_take_item(recompense):
                 player.inventory.append(recompense)
                 print(f"\n🎁 Vous recevez : {nom_objet} !")
             else:
                 print(f"\n💔 Le Vieux vous tend {nom_objet}, mais vous n'avez plus de place !")
                 print("   L'objet tombe au sol.")
-                # Ajouter l'objet à la salle actuelle
                 player.current_room.add_item(recompense)
         else:
             print("« Je n'ai plus rien pour toi, garnement ! »")

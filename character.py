@@ -1,113 +1,210 @@
+"""
+Module des personnages non-joueurs (PNJ).
+"""
+
 import random
+import events
+
 
 class Character:
-    def __init__(self, name, description, initial_room, quests=None):
+    """
+    Représente un personnage non-joueur (PNJ) dans le jeu.
+    
+    Attributes:
+        name (str): Nom du personnage
+        description (str): Description du personnage
+        current_room (Room): Salle actuelle du personnage
+        initial_room (Room): Salle de départ (spawn)
+        quest (Quest): Quête associée au personnage
+        movement_enabled (bool): Si le personnage peut se déplacer
+        interacted (bool): Si le joueur a déjà parlé au personnage
+        can_move_now (bool): Si le personnage peut bouger maintenant
+        waiting_for_player_move (bool): Si le personnage attend le déplacement du joueur
+    """
+    
+    def __init__(self, name, description, initial_room, quest=None):
+        """
+        Initialise un nouveau personnage.
+        
+        Args:
+            name (str): Nom du personnage
+            description (str): Description du personnage
+            initial_room (Room): Salle de départ
+            quest (Quest, optional): Quête associée. Defaults to None.
+        """
         self.name = name
         self.description = description
         self.current_room = initial_room
-        self.initial_room = initial_room # Point de spawn mémorisé
-        self.quests = quests if quests else []
-        self.dialogue_options = []
+        self.initial_room = initial_room
+        self.quest = quest
         self.movement_enabled = True
         self.interacted = False
         
-        # AJOUT : Contrôle du mouvement
+        # Contrôle du mouvement
         self.can_move_now = True
         self.waiting_for_player_move = False
         
-        # Comportement spécial (Events)
-        self.interaction_behavior = None
+        # Mapping des mini-jeux par nom de personnage
+        self.minigame_mapping = {
+            "Garde": events.guard_interaction,
+            "Coach": events.captain_interaction,
+            "Champion": events.champion_interaction,
+            "Ivre": events.drunk_interaction,
+            "Vieux": events.old_member_interaction
+        }
         
-        # Ajouter le personnage à la salle initiale
+        # Ajouter le personnage à sa salle initiale
         if initial_room:
             initial_room.add_character(self)
     
     def interact(self, player, game):
-        """Interagir avec le personnage"""
+        """
+        Interagir avec le personnage.
+        
+        Args:
+            player (Player): Le joueur qui interagit
+            game (Game): Instance du jeu
+            
+        Returns:
+            bool: True si l'interaction a réussi
+        """
         print(f"\n=== {self.name} ===")
         print(self.description)
         
-        # AJOUT : Bloquer ce PNJ jusqu'au prochain déplacement du joueur
+        # Bloquer temporairement le mouvement du PNJ
         self.can_move_now = False
         self.waiting_for_player_move = True
         
-        # 1. Interaction Spéciale (Mini-jeu)
-        if self.interaction_behavior:
-            success = self.interaction_behavior(player, game)
-            if success and not self.interacted:
+        # Si le personnage a une quête
+        if self.quest:
+            if not self.quest.is_active:
+                # Activer la quête sans lancer le mini-jeu
+                self.quest.activate()
+                if game and hasattr(game, 'quest_manager'):
+                    game.quest_manager.active_quests.append(self.quest)
+                print(f"\n📜 NOUVELLE QUÊTE: {self.quest.name}")
+                print(f"   {self.quest.description}")
+                print("\n« Reviens me voir quand tu seras prêt à relever le défi ! »")
                 self.interacted = True
-                player.add_reward(f"Succès avec {self.name}")
-            return success
-
-        # 2. Interaction Standard
+                return True
+            
+            elif self.quest.is_active and not self.quest.is_completed:
+                # Lancer le mini-jeu
+                print(f"\n📜 QUÊTE EN COURS: {self.quest.name}")
+                
+                # Quête simple de dialogue
+                if self.quest.challenge_type == 'talk':
+                    print("« Parfait, discutons ! »")
+                    print(f"✅ Quête '{self.quest.name}' complétée par la discussion !")
+                    
+                    self.quest.complete(success=True)
+                    if game and hasattr(game, 'quest_manager'):
+                        game.quest_manager.complete_quest(self.name, success=True)
+                    return True
+                
+                # Mini-jeu spécifique au personnage
+                if self.name in self.minigame_mapping:
+                    print(f"« Tu es prêt pour le défi ? »")
+                    minigame_func = self.minigame_mapping[self.name]
+                    success = minigame_func(player, game)
+                    
+                    if success:
+                        self.quest.complete(success=True)
+                        if game and hasattr(game, 'quest_manager'):
+                            game.quest_manager.complete_quest(self.name, success=True)
+                        print(f"\n✅ Quête '{self.quest.name}' complétée !")
+                        return True
+                    else:
+                        print(f"\n❌ Échec. Vous pouvez réessayer plus tard !")
+                        return False
+                else:
+                    print(f"\n❌ Ce personnage n'a pas de mini-jeu défini.")
+                    return False
+            
+            elif self.quest.is_completed:
+                print(f"\n« Merci pour ton aide ! La quête '{self.quest.name}' est terminée. »")
+                return True
+        
+        # Interaction standard (sans quête principale)
         if not self.interacted:
             self.interacted = True
             print(f"\n« Bonjour {player.name}. »")
-            available_quests = [q for q in self.quests if not q.get('completed', False)]
-            if available_quests:
-                print("\nJ'ai des missions pour toi:")
-                for i, quest in enumerate(available_quests, 1):
-                    print(f"  {i}. {quest['description']}")
-                player.add_reward(f"Rencontre avec {self.name}")
-            return True
+            
+            # Le Garde propose la quête d'exploration
+            if self.name == "Garde" and not hasattr(player, 'explorer_quest_given'):
+                print("« Tu as l'air d'un explorateur. »")
+                print("« Si tu veux prouver ta valeur, visite les 4 coins extrêmes du campus. »")
+                print("« La Cave (sous la cuisine), l'Observatoire (au-dessus du bureau), »")
+                print("« le Sauna (sous la salle de sport) et la Terrasse (au-dessus du bar). »")
+                print("« Reviens me voir quand tu auras tout visité ! »")
+                player.explorer_quest_given = True
+                return True
+            
+            # L'Ivre propose la quête de collection
+            elif self.name == "Ivre" and not hasattr(player, 'collector_quest_given'):
+                print("« Hips... Tu cherches des trucs à boire et manger ? »")
+                print("« Rassemble un RedBull, une part de pizza et une bonne bouteille de vin. »")
+                print("« Ça fait un bon festin ! Les trouve où tu peux... hips ! »")
+                player.collector_quest_given = True
+                return True
+            else:
+                print("« Je n'ai pas de mission pour toi pour le moment. »")
+                return True
         else:
             print("\n« Nous avons déjà discuté. »")
             return True
 
     def move(self):
-        """Déplacer le personnage vers une salle adjacente"""
-        # 1. Vérification si le mouvement est autorisé
-        if not self.movement_enabled:  # ← Le Vieux est bloqué ici
+        """
+        Déplacer le personnage vers une salle adjacente aléatoire.
+        
+        Returns:
+            bool: True si le déplacement a réussi
+        """
+        # Vérifications
+        if not self.movement_enabled:
             return False
-                
-        # 2. Vérification des flags (si bloqué après interaction)
-        if not self.can_move_now:  # ← Bloqué après un talk
+        if not self.can_move_now:
             return False
-                
-        # 3. Vérification si la salle existe
         if self.current_room is None:
             return False
 
-        # 4. Liste des 6 directions possibles (même si certaines n'existent pas)
+        # Choisir une direction aléatoire
         all_directions = ["N", "E", "S", "O", "U", "D"]
-        
-        # 5. Choisir une direction au hasard parmi les 6
         direction = random.choice(all_directions)
         
-        # 6. Vérifier si cette direction existe dans les sorties
+        # Vérifier si la direction existe
         if direction not in self.current_room.exits:
-            return False  # ← Direction n'existe pas, pas de déplacement
+            return False
         
-        # 7. Vérifier si la sortie n'est pas un mur (None)
         next_room = self.current_room.exits[direction]
         if next_room is None:
-            return False  # ← C'est un mur, pas de déplacement
+            return False
         
-        # 8. AJOUT IMPORTANT : Vérifier si la prochaine salle est le Bureau du Président
+        # Les PNJ ne peuvent pas entrer dans le bureau du président
         if next_room.name == "Bureau du Président":
-            return False  # ← Les PNJ ne peuvent pas entrer dans le bureau
+            return False
         
-        # 9. Effectuer le déplacement
-        # Retirer de la salle actuelle
+        # Effectuer le déplacement
         if self in self.current_room.characters:
             self.current_room.characters.remove(self)
         
-        # Ajouter à la nouvelle salle
         next_room.add_character(self)
         self.current_room = next_room
         
-        # Debug optionnel pour voir les mouvements
-        # print(f"[DEBUG] {self.name} va vers {direction} ({next_room.name})")
-        
-        return True  # ← Déplacement réussi
+        return True
     
     def reset_movement_flags(self):
-        """Réactiver le mouvement après un déplacement du joueur"""
+        """
+        Réactiver le mouvement après un déplacement du joueur.
+        """
         self.can_move_now = True
         self.waiting_for_player_move = False
     
     def reset_position(self):
-        """Ramène le personnage à son point de spawn (si besoin)"""
+        """
+        Ramener le personnage à son point de spawn initial.
+        """
         if self.current_room != self.initial_room and self.initial_room:
             if self.current_room and self in self.current_room.characters:
                 self.current_room.characters.remove(self)
