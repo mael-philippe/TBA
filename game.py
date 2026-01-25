@@ -103,7 +103,7 @@ class Game:
         sauna.exits = {"U": salle_sport}
         dortoir.exits = {"S": hall, "E": bar, "O": bureau, "U": salle_jeux}
         bar.exits = {"O": dortoir, "U": terrasse, "S": cuisine}
-        terrasse.exits = {"D": bar, "O": salle_jeux}
+        terrasse.exits = {"O": salle_jeux} # sens unique, on ne peut pas retourner dans le bar
         bureau.exits = {"E": dortoir, "U": observatoire}
         observatoire.exits = {"D": bureau, "E": salle_jeux}
         salle_jeux.exits = {"D": dortoir, "O": observatoire, "E": terrasse}
