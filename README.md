@@ -6,6 +6,7 @@ Vous êtes étudiant(e) dans une nouvelle université et vous avez un objectif a
 
 Votre mission : compléter au moins **4 quêtes** sur les 7 disponibles, collecter des objets trophées, et vous présenter devant le président de la fraternité pour revendiquer votre place.
 
+Présentation du jeu sur Youtube : https://youtu.be/kSotockFKbI?si=HbLbv3QKpbeH_cTX
 
 ## Installation et Lancement
 
