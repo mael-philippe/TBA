@@ -235,11 +235,14 @@ TBA-project/
 
 ### Diagramme de classes
 
-#### Game.py
+#### game.py
 <img width="303" height="462" alt="classes" src="https://github.com/user-attachments/assets/f1103786-cdbd-4fc5-b688-1433bb9036c2" />
 
 
+#### actions.py
+<img width="433" height="363" alt="classes" src="https://github.com/user-attachments/assets/46a13ccf-8cd2-4c79-8f59-2c5f9489845c" />
+
+#### character.py
+<img width="267" height="374" alt="classes" src="https://github.com/user-attachments/assets/bdf6f195-a412-4776-b9b6-92f2d91d1197" />
 
 
-Diagrammes de Classes
-<img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7
