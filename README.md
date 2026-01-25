@@ -219,43 +219,26 @@ Légende des étages :
 ### Architecture du Projet
 
 TBA-project/
-├── actions.py          # Toutes les actions/commandes du jeu
-├── character.py        # Classe Character (PNJ avec mouvements)
-├── command.py          # Système de commandes et parsing
-├── events.py           # Mini-jeux et interactions spéciales
-├── game.py             # Point d'entrée principal et boucle de jeu
-├── item.py             # Classe Item (objets avec poids)
-├── player.py           # Classe Player (inventaire, santé, historique)
-├── quest.py            # Système de quêtes (Quest, QuestManager)
-├── room.py             # Classe Room (salles avec inventaire)
-└── README.md           # Documentation
+
+    ├── actions.py          # Toutes les actions/commandes du jeu
+    ├── character.py        # Classe Character (PNJ avec mouvements)
+    ├── command.py          # Système de commandes et parsing
+    ├── events.py           # Mini-jeux et interactions spéciales
+    ├── game.py             # Point d'entrée principal et boucle de jeu
+    ├── item.py             # Classe Item (objets avec poids)
+    ├── player.py           # Classe Player (inventaire, santé, historique)
+    ├── quest.py            # Système de quêtes (Quest, QuestManager)
+    ├── room.py             # Classe Room (salles avec inventaire)
+    └── README.md           # Documentation
 
 
 ### Diagramme de classes
-![alt text](image.png)
 
 
-┌─────────────────────────────────────────────────────────────┐
-│                         ARCHITECTURE                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Game ──┬── Player ──┬── Inventory                          │
-│         │            ├── History                            │
-│         │            └── Current Room                       │
-│         │                                                   │
-│         ├── Room ─────┬── Exits (to other Rooms)            │
-│         │             ├── Inventory (Items)                 │
-│         │             └── Characters (PNJ)                  │
-│         │                                                   │ 
-│         ├── Character ─── Quest                             │
-│         │                                                   │
-│         ├── QuestManager ──┬── Quests                       │
-│         │                  ├── Active Quests                │
-│         │                  └── Completed Quests             │
-│         │                                                   │
-│         └── Command ─── Action (callback)                   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+
+
+
+
 
 Diagrammes de Classes
 <img width="950" height="998" alt="Diagramme de Classe Room" src="https://github.com/user-attachments/assets/925710a0-4013-4dc9-a7e1-066d88d1ff52" /><img width="1009" height="1147" alt="Diagramme de Classe Player" src="https://github.com/user-attachments/assets/6ca39591-4deb-48e4-9938-0515e09d7
